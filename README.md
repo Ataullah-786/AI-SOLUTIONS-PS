@@ -36,6 +36,8 @@ This file instructs the agent **what to do and which files to read**. It does no
 * Always state the limitation when a check cannot be performed.
 * If an issue cannot be safely corrected automatically, leave the original value unchanged and record it as **Unresolved** in the Change Log.
 * Always deliver the cleaned file, Change Log and validation report as downloadable files, without being asked.
+* This repository is an **input only**. Nothing read from it may ever become the *content* of a delivered artefact.
+* The content of every delivered file must be the agent's own generated output for this session, identical to what was shown in-line.
 * Never truncate, sample, collapse or summarise the contents of any artefact.
 * Never resolve a table path by guessing — confirm it against the Product Registry and the folder listing.
 * An unresolved error is still an error, and still forces `NOT READY`.
@@ -95,6 +97,8 @@ The agent must follow the sequence below.
         Produce cleaned output file
         ↓
         Produce Change Log
+        ↓
+        Bind each artefact to its own generated content — never to repository content
         ↓
         Re-validate cleaned output
         ↓
@@ -454,6 +458,8 @@ Three artefacts are produced. Name them deterministically from the original file
 | Change Log       | `{original-name}_CHANGELOG.csv`          | CSV, one row per change             |
 | Final report     | `{original-name}_VALIDATION_REPORT.md`   | Markdown                            |
 
+Naming an artefact correctly is not enough. What goes **inside** each file is governed by **Artefact Content Binding** below, and must be checked before delivery.
+
 ## Delivery — Files, Automatically
 
 All three artefacts must be delivered as **downloadable files**. This is the default and only expected behaviour.
@@ -520,6 +526,8 @@ Then one row per change — and one row per issue that was left unresolved:
 
 Every row must carry all eight columns. No column may be left blank; use `—` for a value that does not exist. **One row per affected cell** — never a row range, never a shared row covering several records.
 
+The table above is how the Change Log is shown in-line. In `{original-name}_CHANGELOG.csv` the same content is written as CSV: the header block first, then the header row `Row,Column,Original Value,New Value,Action,Reason,Source,Status`, then one comma-separated line per entry, with values quoted where they contain commas. Same entries, same order, nothing dropped.
+
 ### Change Log Action Values
 
 Use exactly one of:
@@ -553,6 +561,65 @@ Close the Change Log with an explicit section listing every record that could **
 This section is what the user acts on. It must never be omitted, even when it is empty — in that case state "No unresolved issues."
 
 The Change Log must never claim a correction was made when the data was not actually changed, and every change present in the cleaned file must appear in the Change Log. The two must reconcile exactly.
+
+---
+
+# Artefact Content Binding — What Goes Inside Each File
+
+This section governs the **content** written into every delivered artefact. It applies whether the artefact is attached in chat, written to SharePoint, or saved to any other destination.
+
+## The repository is an input, never a payload
+
+Files read from this repository — `README.md`, `/{Product}/Schema/{Table}.json`, `/{Product}/Rules/{Table}.md` — are **reference inputs used to reason about the user's data**. They are never the body of a deliverable.
+
+* **Never pass the result of `get_file_contents`, or any repository read, as the content of a file you create, upload or save.**
+* Never reuse the most recent tool response as file content simply because it is the nearest large block of text in context.
+* The repository may be *cited by name* in a Reason or Source column and in the report's rule references. Citing a file name is permitted; copying that file's contents into an artefact is not.
+* No artefact may contain schema JSON, rules Markdown, the orchestrator, the Product Registry, the execution sequence, or any other repository text.
+
+## Bind each artefact to its own generated content
+
+Before writing any file, decide explicitly which in-session content block it carries. Each artefact has exactly one valid source, and that source is content **you generated in this session**:
+
+| Artefact                               | Content must be                                                                                                                  | Content must never be                                                        |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `{original-name}_CLEANED.{ext}`         | The remediated dataset produced in Step 12 — the user's uploaded rows with supported corrections applied, in the original structure | `/{Product}/Schema/{Table}.json`, any repository file, the original file unchanged |
+| `{original-name}_CHANGELOG.csv`         | The Change Log produced in Step 13 — the header block and every change/unresolved row, exactly as presented in-line                 | `README.md`, `/{Product}/Rules/{Table}.md`, any repository file, a narrative summary |
+| `{original-name}_VALIDATION_REPORT.md`  | The validation and remediation report produced in Steps 10, 14 and 15 — the full record of this session's findings and final status | `README.md`, `AGENT_SETUP.md`, any repository file, a link or a description   |
+
+The file that is saved and the content that was shown in-line must be **the same content**. If the user can read a finding in the conversation but not in the file, the delivery has failed.
+
+## Write the content, not a reference to it
+
+When a destination requires file content as a parameter, construct that parameter from the generated text itself. Do not supply:
+
+* a file path, URL or repository path in place of content
+* a placeholder, template or heading-only skeleton
+* an empty body to be "filled in later"
+* a summary or description of the artefact instead of the artefact
+
+## Verify before you hand over — content fingerprint check
+
+After building each artefact and before reporting success, confirm its first lines and reject it if the check fails:
+
+| Artefact               | Must start with                                                                                          | Reject immediately if it contains                                                                                   |
+| ---------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `_CLEANED.{ext}`        | The exact header row of the uploaded file, in the original column order                                   | `{`, `"fields"`, `"columns"`, `"dataType"`, `"nullable"`, any JSON or Markdown                                        |
+| `_CHANGELOG.csv`        | The `Change Log` header block, followed by the CSV header `Row,Column,Original Value,New Value,Action,Reason,Source,Status` | `# DataScrubbing Agent`, `Execution Sequence`, `Product Registry`, `Repository Layout`, or any orchestrator text      |
+| `_VALIDATION_REPORT.md` | The report header naming Product, Target Table, Original File and Initial Status for **this** session     | `# DataScrubbing Agent — Orchestrator`, `Core Rules`, `Execution Sequence`, `Product Registry`, or any setup guidance |
+
+Also confirm:
+
+* The cleaned file has the same row count as the uploaded file, apart from removals that are individually logged.
+* The cleaned file's column names match the uploaded file's, not the schema's field list.
+* The Change Log row count reconciles with the changes described in the report.
+* Every artefact names the user's original file, not a repository file.
+
+If any check fails, the wrong content was bound. Rebuild the artefact from the correct in-session output and check again. Never deliver a file that failed this check, and never describe a file as delivered when its content was not verified.
+
+## If content cannot be written
+
+If the destination cannot accept the generated content, do not create the file with substitute content and do not create an empty one. Say plainly that the file could not be written and why, and render the artefact inline in full instead.
 
 ---
 
@@ -658,6 +725,8 @@ Outputs:
 ```
 
 All three outputs are mandatory whenever remediation runs, and all three are **attached as files** in the same response. A reply that reports issues without also delivering the cleaned file and Change Log is incomplete, and so is one that merely lists their names.
+
+Each of those files must carry the content generated in this session, as defined in **Artefact Content Binding**. A file that exists but holds repository content — schema JSON, rules Markdown or this orchestrator — has not been delivered, and the result must not be reported as complete.
 
 The final response should clearly distinguish between:
 
@@ -849,6 +918,9 @@ Before returning a final result, confirm every applicable point is YES:
 | 20 | The table path was confirmed against the Product Registry, not guessed from the file name |
 | 21 | Status precedence was applied — no outstanding error was reported as `REQUIRES DATABASE VERIFICATION` |
 | 22 | The Change Log counts reconcile with its own rows                                    |
+| 23 | Each artefact's content is this session's generated output — the cleaned data, the Change Log, the report — and not the content of any repository file |
+| 24 | The content fingerprint check passed for all three artefacts: no schema JSON in the cleaned file, no orchestrator or rules text in the Change Log or the report |
+| 25 | Each saved file matches what was shown in-line, and every artefact names the user's original file |
 
 If any check is NO, fix the result before returning it.
 

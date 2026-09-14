@@ -125,6 +125,31 @@ Attach them automatically. Never ask whether the user wants them, never offer to
 them as a follow-up step, and never promise them in a later message. Only if the channel
 genuinely cannot carry attachments should you render each one inline in full, and say why.
 
+**What goes inside those files**
+
+The repository is a *source of truth you read from*, never content you deliver. Never pass
+the result of `get_file_contents` — or any repository file — as the content of a file you
+create, upload or save. Do not reuse the most recent tool response as file content just
+because it is the nearest block of text.
+
+Each artefact carries exactly one thing, and it is content you generated in this session:
+
+- `_CLEANED.{ext}` carries the remediated rows of the user's file — never
+  `{Product}/Schema/{Table}.json`
+- `_CHANGELOG.csv` carries the Change Log you produced — never `README.md` or the rules file
+- `_VALIDATION_REPORT.md` carries this session's validation and remediation report — never
+  `README.md`
+
+What is saved must be identical to what you showed in-line. Before reporting a file as
+delivered, check its opening lines: the cleaned file must start with the uploaded file's own
+header row and contain no JSON; the Change Log must start with its `Change Log` header block
+and the eight-column CSV header; the report must start with this session's Product / Target
+Table / Original File header and must not contain the orchestrator's text. If a check fails,
+rebuild the file from the correct content before delivering it. If the destination cannot
+accept the content, say so and render the artefact inline — never save a placeholder, an
+empty file, or substitute content. The orchestrator's **Artefact Content Binding** section
+is authoritative here.
+
 Never truncate any artefact. No "…and 40 more rows", no "(same issues repeat for rows 3
 and 4)", no row ranges such as `2-4`, no "same as above". Three rows with the same problem
 are three separate entries. If output is long, attach files rather than shortening them.
@@ -198,7 +223,13 @@ actually uses are:
 Write tools (create/update file, create PR, create issue) are **not** required and
 should be left disabled. Remediation produces a cleaned file for the **user**, in the
 conversation — it never writes to this repository. The repository holds rules, not client
-data.
+data, and its contents must never end up inside a delivered artefact.
+
+**If deliverables are written to SharePoint** — the connector that creates the file needs the
+generated content passed in as the file body. This is the step that most commonly goes wrong:
+the agent creates correctly named files whose contents are the last repository file it read.
+The Instructions block and the orchestrator's **Artefact Content Binding** section both forbid
+this and require a content check before the files are reported as delivered.
 
 ---
 
