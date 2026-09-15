@@ -38,7 +38,6 @@ This file instructs the agent **what to do and which files to read**. It does no
 * Always deliver the cleaned file, Change Log and validation report as downloadable files, without being asked.
 * This repository is an **input only**. Nothing read from it may ever become the *content* of a delivered artefact.
 * The content of every delivered file must be the agent's own generated output for this session, identical to what was shown in-line.
-* The only place the agent may ever write is `/_staging/`, and only to hand artefacts over for delivery. Staged files are deleted once delivery is confirmed.
 * Never truncate, sample, collapse or summarise the contents of any artefact.
 * Never resolve a table path by guessing — confirm it against the Product Registry and the folder listing.
 * An unresolved error is still an error, and still forces `NOT READY`.
@@ -100,8 +99,6 @@ The agent must follow the sequence below.
         Produce Change Log
         ↓
         Bind each artefact to its own generated content — never to repository content
-        ↓
-        Stage, verify, upload and clean up each artefact in turn
         ↓
         Re-validate cleaned output
         ↓
@@ -626,60 +623,6 @@ If the destination cannot accept the generated content, do not create the file w
 
 ---
 
-# Artefact Staging — Temporary Repository Hand-off
-
-**Status: active.** This procedure exists because direct content hand-off to the delivery destination has been observed to deliver repository content instead of the generated artefact. Staging writes each artefact to a real file first, so that what reaches the destination is a file, not a content parameter.
-
-## How this relates to Artefact Content Binding
-
-Artefact Content Binding still applies in full. It forbids *repository reference files* — `README.md`, `Schema/{Table}.json`, `Rules/{Table}.md` — from becoming artefact content.
-
-A staging file is not a reference file. It is the artefact itself, written by you, parked briefly so it can be handed over as a file. Its content is still this session's generated output and nothing else. Staging changes **where the content is held**, never **what the content is**.
-
-## Staging location
-
-Write staging files to `/_staging/` in this repository, named exactly as the final artefacts:
-
-```text
-/_staging/{original-name}_CLEANED.{ext}
-/_staging/{original-name}_CHANGELOG.csv
-/_staging/{original-name}_VALIDATION_REPORT.md
-```
-
-`/_staging/` is a transit folder. It holds no reference data, it is never a source of truth, and in normal operation it is **empty**. Never read from `/_staging/` to answer a question about rules or schema. Never write anywhere else in the repository.
-
-## Sequence — one artefact at a time
-
-Handle each artefact completely before starting the next. Do not generate all three and then save all three; that is what allows the wrong content to be picked up.
-
-For each artefact in turn:
-
-1. **Render it in full, in-line**, immediately before saving it. This is the content of record.
-2. **Write it to `/_staging/`**, passing the text you just rendered as the file content.
-3. **Read the staged file back** and compare it to what you rendered. Apply the fingerprint check in **Artefact Content Binding**. If it does not match — if it contains schema JSON, orchestrator text or anything you did not just render — stop. Do not upload it. Report the mismatch and what the staged file actually contained.
-4. **Upload the staged file to the delivery destination**, as a file, referencing the staged path. Do not re-supply the content as text at this step.
-5. **Confirm the upload succeeded** and the destination file is non-empty.
-6. Only then move to the next artefact.
-
-## Clean-up — mandatory
-
-Once all three artefacts are confirmed at the destination, delete every file you created under `/_staging/`. The folder must be left empty.
-
-* Never delete a staged file before its upload is confirmed. A failed upload plus a deleted staging file loses the artefact entirely.
-* If an upload fails, keep the staged file, say which artefact is still in `/_staging/` and why, and render that artefact inline in full so the user has it regardless.
-* Never leave staged files behind after a successful run. If you cannot delete them, say so explicitly and name the files left in place.
-* Never commit anything outside `/_staging/`. Never modify a schema file, a rules file or this orchestrator.
-
-## What this procedure proves
-
-If a staged file contains the correct generated content but the delivered file does not, the fault is in the delivery step, not in this agent's content handling. Report that distinction plainly — it is the information the operator needs.
-
-## Data handling
-
-Staged files contain client data. They are transitory by design and must be removed on completion. Do not stage anything that is not one of the three named artefacts, and never treat a staged file as reference material in a later turn.
-
----
-
 # Step 14 — Re-Validate the Cleaned File
 
 After remediation, the cleaned output file must be treated as a new validation input.
@@ -978,8 +921,6 @@ Before returning a final result, confirm every applicable point is YES:
 | 23 | Each artefact's content is this session's generated output — the cleaned data, the Change Log, the report — and not the content of any repository file |
 | 24 | The content fingerprint check passed for all three artefacts: no schema JSON in the cleaned file, no orchestrator or rules text in the Change Log or the report |
 | 25 | Each saved file matches what was shown in-line, and every artefact names the user's original file |
-| 26 | Each artefact was rendered in-line immediately before being staged, and the staged file was read back and verified before upload |
-| 27 | Every staged file was deleted once delivery was confirmed, and `/_staging/` was left empty — or any file left behind was named explicitly |
 
 If any check is NO, fix the result before returning it.
 
