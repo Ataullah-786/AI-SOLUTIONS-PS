@@ -1,7 +1,0 @@
-Transit folder for artefact staging. See the "Artefact Staging" section of README.md.
-
-This folder must be empty in normal operation. Any file here other than .gitkeep is a
-leftover from a failed or interrupted delivery and can be removed.
-
-Never treat anything in this folder as reference data. It holds client artefacts in
-transit, never schema or rules.
