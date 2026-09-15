@@ -471,7 +471,28 @@ All three artefacts must be delivered as **downloadable files**. This is the def
 
 Announcing remediation and performing it happen in one turn. A turn that only says what you are about to do, and delivers nothing, is a wasted turn.
 
-If, and only if, the delivery channel genuinely cannot carry file attachments, render each artefact inline in full — the cleaned data as a complete delimited block, the Change Log as a complete table — and say explicitly that attachments were unavailable.
+## Saving the Artefacts — Call the Tool, Do Not Ask
+
+A tool is configured for saving artefacts to their destination. Using it is part of the job, not an optional extra the user has to request.
+
+**Call it three times in the same turn that remediation completes** — once for the cleaned file, once for the Change Log, once for the validation report. Pass the file name and the full generated content of that artefact on each call.
+
+Questions that must never be asked, because the answer is always yes:
+
+* "Would you like me to save these to SharePoint?"
+* "Shall I upload the deliverables now?"
+* "Would you like me to store these centrally?"
+* "Shall I provide the deliverables for download?"
+
+Rendering the artefacts in-line does **not** discharge this duty. In-line output and saved files are both required: the user reads the findings in the conversation and keeps the files. Delivering one is not delivering the other.
+
+Do not treat a `NOT READY` status as a reason to withhold the artefacts. A file that is not ready still has a cleaned version, a Change Log and a report, and the user needs all three in order to act.
+
+After the three calls, confirm what was saved and where. Report **only what the tool actually returned**. If a call failed, say which artefact failed and what the error was. Never report a save as successful without a successful tool response — a claimed delivery that did not happen is worse than an admitted failure.
+
+If the save tool is unavailable or every call fails, say so plainly, then render all three artefacts in-line in full so the user still has the content.
+
+If, and only if, the delivery channel genuinely cannot carry file attachments, render each artefact inline in full — the cleaned data as a complete delimited block, the Change Log as a complete table — and say explicitly that attachments were unavailable. This does not excuse you from calling the save tool.
 
 ## No Truncation — In Any Artefact
 
@@ -528,6 +549,8 @@ Every row must carry all eight columns. No column may be left blank; use `—` f
 
 The table above is how the Change Log is shown in-line. In `{original-name}_CHANGELOG.csv` the same content is written as CSV: the header block first, then the header row `Row,Column,Original Value,New Value,Action,Reason,Source,Status`, then one comma-separated line per entry, with values quoted where they contain commas. Same entries, same order, nothing dropped.
 
+The header block is **mandatory in both**. A Change Log that begins directly with `Row,Column,...` is incomplete — it is missing the Product, Target Table, Original File, Cleaned File, Generated timestamp and the reconciled counts. Write the header block first, every time, in-line and in the file alike.
+
 ### Change Log Action Values
 
 Use exactly one of:
@@ -539,11 +562,13 @@ Use exactly one of:
 
 ### Change Log Status Values
 
-Use:
+Use **exactly one of these three**, spelled exactly as shown. No other value is permitted:
 
 * `Applied` — correction was successfully made
 * `Unresolved` — issue could not be safely corrected
 * `Not Applicable` — remediation was not required
+
+Do not invent alternatives. `Fixed`, `Corrected`, `Review`, `Flagged`, `Pending`, `Done` and `OK` are **not** valid Status values — a correction that was applied is `Applied`, and anything needing human judgement is `Unresolved`. `Corrected` is an **Action**, never a Status; keep the two columns distinct.
 
 ### Reason and Source
 
@@ -921,6 +946,9 @@ Before returning a final result, confirm every applicable point is YES:
 | 23 | Each artefact's content is this session's generated output — the cleaned data, the Change Log, the report — and not the content of any repository file |
 | 24 | The content fingerprint check passed for all three artefacts: no schema JSON in the cleaned file, no orchestrator or rules text in the Change Log or the report |
 | 25 | Each saved file matches what was shown in-line, and every artefact names the user's original file |
+| 26 | The save tool was called once per artefact, without asking the user, and each result reported reflects what the tool actually returned |
+| 27 | Every Change Log Status is `Applied`, `Unresolved` or `Not Applicable` — no invented values |
+| 28 | The Change Log header block is present, in-line and in the CSV, with counts that reconcile |
 
 If any check is NO, fix the result before returning it.
 
