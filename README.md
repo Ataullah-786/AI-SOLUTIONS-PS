@@ -439,7 +439,7 @@ The original file must remain unchanged. The cleaned file is a **new artefact**,
 
 The cleaned output must:
 
-* Preserve the original file structure wherever possible
+* Preserve the original column layout and row content wherever possible
 * Preserve the original column order and header row
 * Preserve the original row order, so row numbers stay comparable with the validation report
 * Preserve valid data byte-for-byte — never reformat a value that was already valid
@@ -454,9 +454,25 @@ Three artefacts are produced. Name them deterministically from the original file
 
 | Artefact         | Name                                     | Format                              |
 | ---------------- | ---------------------------------------- | ----------------------------------- |
-| Cleaned file     | `{original-name}_CLEANED.{ext}`          | Same format as the input (CSV/XLSX) |
+| Cleaned file     | `{original-name}_CLEANED.csv`            | CSV, always — see below             |
 | Change Log       | `{original-name}_CHANGELOG.csv`          | CSV, one row per change             |
 | Final report     | `{original-name}_VALIDATION_REPORT.md`   | Markdown                            |
+
+### The cleaned file is always CSV
+
+The cleaned file is written as CSV regardless of the input format, and named `.csv`.
+
+For a CSV input this changes nothing. For an Excel input — `.xlsx` or `.xls` — read the workbook as normal, then write the cleaned output as CSV: `Report.xlsx` becomes `Report_CLEANED.csv`.
+
+**Never name the cleaned file `.xlsx`.** The artefact you produce is text. A text file named `.xlsx` is not a workbook — it is a mislabelled CSV that Excel will open only with a format warning, and that other tools may reject outright. The extension must describe what the file actually contains.
+
+When the input was Excel, say so plainly in the validation report, in one line:
+
+```text
+Input format: XLSX. The cleaned file is delivered as CSV.
+```
+
+Only the cleaned file is affected. The Change Log stays `.csv` and the report stays `.md` whatever the input format was.
 
 Naming an artefact correctly is not enough. What goes **inside** each file is governed by **Artefact Content Binding** below, and must be checked before delivery.
 
@@ -522,7 +538,7 @@ Change Log
 Product:        [Product]
 Target Table:   [Table]
 Original File:  [filename]
-Cleaned File:   [filename]_CLEANED.[ext]
+Cleaned File:   [filename]_CLEANED.csv
 Generated:      [timestamp]
 
 Total Changes:  [n]
@@ -608,7 +624,7 @@ Before writing any file, decide explicitly which in-session content block it car
 
 | Artefact                               | Content must be                                                                                                                  | Content must never be                                                        |
 | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `{original-name}_CLEANED.{ext}`         | The remediated dataset produced in Step 12 — the user's uploaded rows with supported corrections applied, in the original structure | `/{Product}/Schema/{Table}.json`, any repository file, the original file unchanged |
+| `{original-name}_CLEANED.csv`           | The remediated dataset produced in Step 12 — the user's uploaded rows with supported corrections applied, as CSV | `/{Product}/Schema/{Table}.json`, any repository file, the original file unchanged |
 | `{original-name}_CHANGELOG.csv`         | The Change Log produced in Step 13 — the header block and every change/unresolved row, exactly as presented in-line                 | `README.md`, `/{Product}/Rules/{Table}.md`, any repository file, a narrative summary |
 | `{original-name}_VALIDATION_REPORT.md`  | The validation and remediation report produced in Steps 10, 14 and 15 — the full record of this session's findings and final status | `README.md`, `AGENT_SETUP.md`, any repository file, a link or a description   |
 
@@ -629,7 +645,7 @@ After building each artefact and before reporting success, confirm its first lin
 
 | Artefact               | Must start with                                                                                          | Reject immediately if it contains                                                                                   |
 | ---------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `_CLEANED.{ext}`        | The exact header row of the uploaded file, in the original column order                                   | `{`, `"fields"`, `"columns"`, `"dataType"`, `"nullable"`, any JSON or Markdown                                        |
+| `_CLEANED.csv`          | The exact header row of the uploaded file, in the original column order                                   | `{`, `"fields"`, `"columns"`, `"dataType"`, `"nullable"`, any JSON or Markdown, XLSX binary                            |
 | `_CHANGELOG.csv`        | The `Change Log` header block, followed by the CSV header `Row,Column,Original Value,New Value,Action,Reason,Source,Status` | `# DataScrubbing Agent`, `Execution Sequence`, `Product Registry`, `Repository Layout`, or any orchestrator text      |
 | `_VALIDATION_REPORT.md` | The report header naming Product, Target Table, Original File and Initial Status for **this** session     | `# DataScrubbing Agent — Orchestrator`, `Core Rules`, `Execution Sequence`, `Product Registry`, or any setup guidance |
 
@@ -745,7 +761,7 @@ Final Status: [READY | NOT READY | REQUIRES DATABASE VERIFICATION]
 
 Outputs:
 - Validation Report          [filename]_VALIDATION_REPORT.md
-- Cleaned/Remediated File    [filename]_CLEANED.[ext]
+- Cleaned/Remediated File    [filename]_CLEANED.csv
 - Change Log                 [filename]_CHANGELOG.csv
 ```
 
@@ -949,6 +965,7 @@ Before returning a final result, confirm every applicable point is YES:
 | 26 | The save tool was called once per artefact, without asking the user, and each result reported reflects what the tool actually returned |
 | 27 | Every Change Log Status is `Applied`, `Unresolved` or `Not Applicable` — no invented values |
 | 28 | The Change Log header block is present, in-line and in the CSV, with counts that reconcile |
+| 29 | The cleaned file is named `.csv`, and an XLSX input was noted as delivered in CSV |
 
 If any check is NO, fix the result before returning it.
 
