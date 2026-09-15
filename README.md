@@ -35,7 +35,7 @@ This file instructs the agent **what to do and which files to read**. It does no
 * Always identify the exact row and column responsible for an issue.
 * Always state the limitation when a check cannot be performed.
 * If an issue cannot be safely corrected automatically, leave the original value unchanged and record it as **Unresolved** in the Change Log.
-* Always deliver the cleaned file, Change Log and validation report as downloadable files, without being asked.
+* Always deliver the cleaned file, Change Log and validation report as saved files, with their links surfaced in chat, without being asked.
 * This repository is an **input only**. Nothing read from it may ever become the *content* of a delivered artefact.
 * The content of every delivered file must be the agent's own generated output for this session, identical to what was shown in-line.
 * Never truncate, sample, collapse or summarise the contents of any artefact.
@@ -478,9 +478,9 @@ Naming an artefact correctly is not enough. What goes **inside** each file is go
 
 ## Delivery — Files, Automatically
 
-All three artefacts must be delivered as **downloadable files**. This is the default and only expected behaviour.
+All three artefacts must be delivered as **saved files the user can open**, with their links surfaced in the conversation. This is the default and only expected behaviour.
 
-* **Never ask whether the user wants the files.** They always do. Produce and attach them.
+* **Never ask whether the user wants the files.** They always do. Produce them and save them.
 * **Never offer to "package them for download" as a follow-up step.** Packaging *is* the step.
 * **Never defer delivery to a later message** — no "coming next", no "stay tuned", no "delivering them in the next message". Produce the artefacts in the same turn in which you announce them.
 * **Never substitute a description of a file for the file itself.**
@@ -505,6 +505,26 @@ Rendering the artefacts in-line does **not** discharge this duty. In-line output
 Do not treat a `NOT READY` status as a reason to withhold the artefacts. A file that is not ready still has a cleaned version, a Change Log and a report, and the user needs all three in order to act.
 
 After the three calls, confirm what was saved and where. Report **only what the tool actually returned**. If a call failed, say which artefact failed and what the error was. Never report a save as successful without a successful tool response — a claimed delivery that did not happen is worse than an admitted failure.
+
+### Surfacing the Saved Files
+
+Each save call returns a link to the file it created. **Present those links to the user in the same turn**, as a short list at the end of the message:
+
+```text
+Saved to SharePoint:
+
+- [Report_CLEANED.csv](<link returned by the save tool>)
+- [Report_CHANGELOG.csv](<link returned by the save tool>)
+- [Report_VALIDATION_REPORT.md](<link returned by the save tool>)
+```
+
+Use the exact URL the tool returned, as a clickable Markdown link with the file name as the link text. Saving a file and not surfacing its link leaves the user to go and hunt for it, which defeats the purpose of saving it.
+
+Rules for these links:
+
+* **Never invent, guess or reconstruct a URL.** Only ever use a value the save tool returned in this session. A fabricated link that 404s is worse than no link.
+* **Never substitute a file path for a link.** `/Shared Documents/Report_CLEANED.csv` is a location, not something the user can click.
+* **If the tool returned no link for an artefact**, name the artefact and say where it was saved instead. Do not leave it out of the list silently, and do not pad the list with a placeholder.
 
 If the save tool is unavailable or every call fails, say so plainly, then render all three artefacts in-line in full so the user still has the content.
 
@@ -954,7 +974,7 @@ Before returning a final result, confirm every applicable point is YES:
 | 15 | Final status is based on the results of the final validation                         |
 | 16 | Any unresolved issues are clearly identified, with what the user must supply         |
 | 17 | All three artefacts were delivered in full — cleaned file, Change Log, final report — none truncated or sampled |
-| 18 | All three artefacts were attached as downloadable files, without the user having to ask |
+| 18 | All three artefacts were saved and their links surfaced in chat, without the user having to ask |
 | 19 | No finding was collapsed into a range, a repeat marker, or a "same as above" note    |
 | 20 | The table path was confirmed against the Product Registry, not guessed from the file name |
 | 21 | Status precedence was applied — no outstanding error was reported as `REQUIRES DATABASE VERIFICATION` |
@@ -966,6 +986,7 @@ Before returning a final result, confirm every applicable point is YES:
 | 27 | Every Change Log Status is `Applied`, `Unresolved` or `Not Applicable` — no invented values |
 | 28 | The Change Log header block is present, in-line and in the CSV, with counts that reconcile |
 | 29 | The cleaned file is named `.csv`, and an XLSX input was noted as delivered in CSV |
+| 30 | Every saved artefact's link was surfaced in chat, using only URLs the save tool returned |
 
 If any check is NO, fix the result before returning it.
 
