@@ -40,6 +40,7 @@ This file instructs the agent **what to do and which files to read**. It does no
 * The content of every delivered file must be the agent's own generated output for this session, identical to what was shown in-line.
 * Never truncate, sample, collapse or summarise the contents of any artefact.
 * Never resolve a table path by guessing — confirm it against the Product Registry and the folder listing.
+* Treat every product and table identifier supplied by the user, or inferred from an uploaded file name, as **case-insensitive**. Normalise it to the canonical spelling in the Product Registry before resolving a path. For example, `pmx`, `Pmx` and `PMX` all mean `PMX`; `gacc`, `Gacc` and `GACC` all mean `GACC`.
 * An unresolved error is still an error, and still forces `NOT READY`.
 
 ---
@@ -126,6 +127,11 @@ PMX
 
 Determine the product from the user's statement, the file name, or the column headers.
 
+Product detection is **case-insensitive**. Compare user text, file names and other prompt
+content without regard to letter case, then use the canonical registry spelling in reports
+and repository paths. A lowercase or mixed-case product name is not ambiguous: `pmx`, `Pmx`
+and `PMX` all resolve to `PMX`.
+
 If the product cannot be determined with confidence, **ask**:
 
 > Which product is this integration file for?
@@ -140,14 +146,26 @@ Valid tables depend on the product. Use the registry in **Product Registry** bel
 
 If the target table has not been supplied, ask the user which table the file is intended to populate. Offer only the tables listed for the detected product.
 
-## Resolve the Table Name Against the Registry — Never Against a Guess
+## Resolve the Table Name Against the Registry — Case-Insensitively, Never Against a Guess
 
-Table names in this repository are exact. Do not infer a file path from the user's wording, the uploaded file's name, or the plural or singular form of a word. `Contact` is the table; `Contacts` is not.
+Table identifiers supplied in prompts and uploaded file names are **case-insensitive**.
+Compare them to the Product Registry without regard to case, then use the matched table's
+canonical registry spelling when constructing repository paths and writing reports. For
+example, `gacc`, `Gacc`, `GACC`, `gacc.csv` and `GACC.xlsx` all resolve to the PMX table
+`GACC` and therefore to `/PMX/Schema/GACC.json` and `/PMX/Rules/GACC.md`.
+
+Case normalisation is required; fuzzy renaming is not. Do not change spelling or infer a
+plural or singular form: `contact` resolves to `Contact`, but `contacts` does not. Do not ask
+the user to repeat or capitalise an otherwise unambiguous product or table identifier.
 
 Before fetching anything:
 
-1. Resolve the name against the **Product Registry**, and against a listing of `/{Product}/Schema/`.
-2. Fetch only a path you have confirmed exists.
+1. Strip the uploaded file's extension and any clearly non-identifying suffix used by the
+   integration process.
+2. Compare the candidate product and table identifiers to the **Product Registry**
+   case-insensitively.
+3. Confirm the canonical name against a listing of `/{Product}/Schema/`.
+4. Fetch only the canonical path you have confirmed exists.
 
 If a fetch returns not-found, that means **your path was wrong**, not that the table is unsupported. A single failed fetch is never evidence of anything. List `/{Product}/Schema/` and `/{Product}/Rules/`, find the closest matching name, and tell the user which table you matched.
 
@@ -914,12 +932,12 @@ Product folder: `/PLE/`
 
 | Table    | Schema File                 | Rules File               | Rules Status |
 | -------- | --------------------------- | ------------------------ | ------------ |
-| Address  | `/PLE/Schema/Address.json`  | `/PLE/Rules/Address.md`  | Empty        |
-| Demise   | `/PLE/Schema/Demise.json`   | `/PLE/Rules/Demise.md`   | Empty        |
-| Lease    | `/PLE/Schema/Lease.json`    | `/PLE/Rules/Lease.md`    | Empty        |
-| Property | `/PLE/Schema/Property.json` | `/PLE/Rules/Property.md` | Empty        |
-| Tenant   | `/PLE/Schema/Tenant.json`   | `/PLE/Rules/Tenant.md`   | Empty        |
-| Unit     | `/PLE/Schema/Unit.json`     | `/PLE/Rules/Unit.md`     | Empty        |
+| Address  | `/PLE/Schema/Address.json`  | `/PLE/Rules/Address.md`  | Populated    |
+| Demise   | `/PLE/Schema/Demise.json`   | `/PLE/Rules/Demise.md`   | Populated    |
+| Lease    | `/PLE/Schema/Lease.json`    | `/PLE/Rules/Lease.md`    | Populated    |
+| Property | `/PLE/Schema/Property.json` | `/PLE/Rules/Property.md` | Populated    |
+| Tenant   | `/PLE/Schema/Tenant.json`   | `/PLE/Rules/Tenant.md`   | Populated    |
+| Unit     | `/PLE/Schema/Unit.json`     | `/PLE/Rules/Unit.md`     | Populated    |
 
 ### PMX
 
