@@ -468,19 +468,26 @@ The cleaned output must:
 
 ## Output Artefact Convention
 
-Three artefacts are produced. Name them deterministically from the original file name:
+Three artefacts are produced. Capture the current date and time once when artefact generation
+begins, format it as `yyyyMMddHHmm` (year, month, day, hour, minute), and use that same
+12-digit timestamp in all three names. The timestamp appears after the artefact suffix and
+before the extension:
 
-| Artefact         | Name                                     | Format                              |
-| ---------------- | ---------------------------------------- | ----------------------------------- |
-| Cleaned file     | `{original-name}_CLEANED.csv`            | CSV, always — see below             |
-| Change Log       | `{original-name}_CHANGELOG.csv`          | CSV, one row per change             |
-| Final report     | `{original-name}_VALIDATION_REPORT.md`   | Markdown                            |
+| Artefact         | Name                                                     | Format                  |
+| ---------------- | -------------------------------------------------------- | ----------------------- |
+| Cleaned file     | `{original-name}_CLEANED_{yyyyMMddHHmm}.csv`             | CSV, always - see below |
+| Change Log       | `{original-name}_CHANGELOG_{yyyyMMddHHmm}.csv`           | CSV                     |
+| Final report     | `{original-name}_VALIDATION_REPORT_{yyyyMMddHHmm}.md`    | Markdown                |
+
+For example, artefacts generated on 18 September 2026 at 16:11 are named
+`Report_CLEANED_202609181611.csv`, `Report_CHANGELOG_202609181611.csv`, and
+`Report_VALIDATION_REPORT_202609181611.md`. Never generate a fresh timestamp per file.
 
 ### The cleaned file is always CSV
 
 The cleaned file is written as CSV regardless of the input format, and named `.csv`.
 
-For a CSV input this changes nothing. For an Excel input — `.xlsx` or `.xls` — read the workbook as normal, then write the cleaned output as CSV: `Report.xlsx` becomes `Report_CLEANED.csv`.
+For a CSV input this changes nothing. For an Excel input — `.xlsx` or `.xls` — read the workbook as normal, then write the cleaned output as CSV: at timestamp `202609181611`, `Report.xlsx` becomes `Report_CLEANED_202609181611.csv`.
 
 **Never name the cleaned file `.xlsx`.** The artefact you produce is text. A text file named `.xlsx` is not a workbook — it is a mislabelled CSV that Excel will open only with a format warning, and that other tools may reject outright. The extension must describe what the file actually contains.
 
@@ -531,9 +538,9 @@ Each save call returns a link to the file it created. **Present those links to t
 ```text
 Saved to SharePoint:
 
-- [Report_CLEANED.csv](<link returned by the save tool>)
-- [Report_CHANGELOG.csv](<link returned by the save tool>)
-- [Report_VALIDATION_REPORT.md](<link returned by the save tool>)
+- [Report_CLEANED_202609181611.csv](<link returned by the save tool>)
+- [Report_CHANGELOG_202609181611.csv](<link returned by the save tool>)
+- [Report_VALIDATION_REPORT_202609181611.md](<link returned by the save tool>)
 ```
 
 Use the exact URL the tool returned, as a clickable Markdown link with the file name as the link text. Saving a file and not surfacing its link leaves the user to go and hunt for it, which defeats the purpose of saving it.
@@ -541,7 +548,7 @@ Use the exact URL the tool returned, as a clickable Markdown link with the file 
 Rules for these links:
 
 * **Never invent, guess or reconstruct a URL.** Only ever use a value the save tool returned in this session. A fabricated link that 404s is worse than no link.
-* **Never substitute a file path for a link.** `/Shared Documents/Report_CLEANED.csv` is a location, not something the user can click.
+* **Never substitute a file path for a link.** `/Shared Documents/Report_CLEANED_202609181611.csv` is a location, not something the user can click.
 * **If the tool returned no link for an artefact**, name the artefact and say where it was saved instead. Do not leave it out of the list silently, and do not pad the list with a placeholder.
 
 If the save tool is unavailable or every call fails, say so plainly, then render all three artefacts in-line in full so the user still has the content.
@@ -576,8 +583,8 @@ Change Log
 Product:        [Product]
 Target Table:   [Table]
 Original File:  [filename]
-Cleaned File:   [filename]_CLEANED.csv
-Generated:      [timestamp]
+Cleaned File:   [filename]_CLEANED_[yyyyMMddHHmm].csv
+Generated:      [timestamp used in all three artefact names]
 
 Total Changes:  [n]
   Corrected:    [n]
@@ -601,7 +608,7 @@ Then one row per change — and one row per issue that was left unresolved:
 
 Every row must carry all eight columns. No column may be left blank; use `—` for a value that does not exist. **One row per affected cell** — never a row range, never a shared row covering several records.
 
-The table above is how the Change Log is shown in-line. In `{original-name}_CHANGELOG.csv` the same content is written as CSV: the header block first, then the header row `Row,Column,Original Value,New Value,Action,Reason,Source,Status`, then one comma-separated line per entry, with values quoted where they contain commas. Same entries, same order, nothing dropped.
+The table above is how the Change Log is shown in-line. In `{original-name}_CHANGELOG_{yyyyMMddHHmm}.csv` the same content is written as CSV: the header block first, then the header row `Row,Column,Original Value,New Value,Action,Reason,Source,Status`, then one comma-separated line per entry, with values quoted where they contain commas. Same entries, same order, nothing dropped.
 
 The header block is **mandatory in both**. A Change Log that begins directly with `Row,Column,...` is incomplete — it is missing the Product, Target Table, Original File, Cleaned File, Generated timestamp and the reconciled counts. Write the header block first, every time, in-line and in the file alike.
 
@@ -662,9 +669,9 @@ Before writing any file, decide explicitly which in-session content block it car
 
 | Artefact                               | Content must be                                                                                                                  | Content must never be                                                        |
 | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `{original-name}_CLEANED.csv`           | The remediated dataset produced in Step 12 — the user's uploaded rows with supported corrections applied, as CSV | `/{Product}/Schema/{Table}.json`, any repository file, the original file unchanged |
-| `{original-name}_CHANGELOG.csv`         | The Change Log produced in Step 13 — the header block and every change/unresolved row, exactly as presented in-line                 | `README.md`, `/{Product}/Rules/{Table}.md`, any repository file, a narrative summary |
-| `{original-name}_VALIDATION_REPORT.md`  | The validation and remediation report produced in Steps 10, 14 and 15 — the full record of this session's findings and final status | `README.md`, `AGENT_SETUP.md`, any repository file, a link or a description   |
+| `{original-name}_CLEANED_{yyyyMMddHHmm}.csv`          | The remediated dataset produced in Step 12 — the user's uploaded rows with supported corrections applied, as CSV | `/{Product}/Schema/{Table}.json`, any repository file, the original file unchanged |
+| `{original-name}_CHANGELOG_{yyyyMMddHHmm}.csv`        | The Change Log produced in Step 13 — the header block and every change/unresolved row, exactly as presented in-line                 | `README.md`, `/{Product}/Rules/{Table}.md`, any repository file, a narrative summary |
+| `{original-name}_VALIDATION_REPORT_{yyyyMMddHHmm}.md` | The validation and remediation report produced in Steps 10, 14 and 15 — the full record of this session's findings and final status | `README.md`, `AGENT_SETUP.md`, any repository file, a link or a description   |
 
 The file that is saved and the content that was shown in-line must be **the same content**. If the user can read a finding in the conversation but not in the file, the delivery has failed.
 
@@ -683,9 +690,9 @@ After building each artefact and before reporting success, confirm its first lin
 
 | Artefact               | Must start with                                                                                          | Reject immediately if it contains                                                                                   |
 | ---------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `_CLEANED.csv`          | The exact header row of the uploaded file, in the original column order                                   | `{`, `"fields"`, `"columns"`, `"dataType"`, `"nullable"`, any JSON or Markdown, XLSX binary                            |
-| `_CHANGELOG.csv`        | The `Change Log` header block, followed by the CSV header `Row,Column,Original Value,New Value,Action,Reason,Source,Status` | `# DataScrubbing Agent`, `Execution Sequence`, `Product Registry`, `Repository Layout`, or any orchestrator text      |
-| `_VALIDATION_REPORT.md` | The report header naming Product, Target Table, Original File and Initial Status for **this** session     | `# DataScrubbing Agent — Orchestrator`, `Core Rules`, `Execution Sequence`, `Product Registry`, or any setup guidance |
+| `_CLEANED_{yyyyMMddHHmm}.csv`          | The exact header row of the uploaded file, in the original column order                                   | `{`, `"fields"`, `"columns"`, `"dataType"`, `"nullable"`, any JSON or Markdown, XLSX binary                            |
+| `_CHANGELOG_{yyyyMMddHHmm}.csv`        | The `Change Log` header block, followed by the CSV header `Row,Column,Original Value,New Value,Action,Reason,Source,Status` | `# DataScrubbing Agent`, `Execution Sequence`, `Product Registry`, `Repository Layout`, or any orchestrator text      |
+| `_VALIDATION_REPORT_{yyyyMMddHHmm}.md` | The report header naming Product, Target Table, Original File and Initial Status for **this** session     | `# DataScrubbing Agent — Orchestrator`, `Core Rules`, `Execution Sequence`, `Product Registry`, or any setup guidance |
 
 Also confirm:
 
@@ -798,9 +805,9 @@ Issues Unresolved: [n]
 Final Status: [READY | NOT READY | REQUIRES DATABASE VERIFICATION]
 
 Outputs:
-- Validation Report          [filename]_VALIDATION_REPORT.md
-- Cleaned/Remediated File    [filename]_CLEANED.csv
-- Change Log                 [filename]_CHANGELOG.csv
+- Validation Report          [filename]_VALIDATION_REPORT_[yyyyMMddHHmm].md
+- Cleaned/Remediated File    [filename]_CLEANED_[yyyyMMddHHmm].csv
+- Change Log                 [filename]_CHANGELOG_[yyyyMMddHHmm].csv
 ```
 
 All three outputs are mandatory whenever remediation runs, and all three are **attached as files** in the same response. A reply that reports issues without also delivering the cleaned file and Change Log is incomplete, and so is one that merely lists their names.
