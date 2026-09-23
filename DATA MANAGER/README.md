@@ -9,6 +9,7 @@ the new agent.
 
 ```text
 AI-SOLUTIONS-PS\
+|-- README.md
 |-- DATA MANAGER\
 |   |-- README.md
 |   `-- AGENT_SETUP.md
