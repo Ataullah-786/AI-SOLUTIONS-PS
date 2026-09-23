@@ -2,14 +2,14 @@
 
 **Product:** PLE
 **Target Table:** `Property`
-**Schema File:** `/PLE/Schema/Property.json`
+**Schema File:** `/COMMON/PLE/Schema/Property.json`
 **Source Workbook:** `PROPERTY_tem.xlsx`
 **Source Worksheet:** `Template`
 
 These rules are taken from the supplied PLE template workbook. They describe how
 intake columns must be populated and validated before data is integrated into the PLE `Property` table.
 
-They are **additional to** the structural rules in `/PLE/Schema/Property.json`.
+They are **additional to** the structural rules in `/COMMON/PLE/Schema/Property.json`.
 Where the workbook and JSON schema disagree on a physical type or length, the JSON
 schema remains the source of truth for storage and the rules below define the business/intake expectation.
 

@@ -2,7 +2,7 @@
 
 **Product:** PMX  
 **Target Table:** `ENTITY`  
-**Schema File:** `/PMX/Schema/ENTITY.json`  
+**Schema File:** `/COMMON/PMX/Schema/ENTITY.json`  
 **Source Workbook:** Import Tables - All Modules  
 **Source Worksheet:** `ENTITY`
 
@@ -10,7 +10,7 @@ These rules are taken from the MRI PMX import specification workbook. They descr
 how the import file columns must be populated before the file can be integrated into
 the PMX `ENTITY` table.
 
-They are **additional to** the structural rules in `/PMX/Schema/ENTITY.json`.
+They are **additional to** the structural rules in `/COMMON/PMX/Schema/ENTITY.json`.
 Where the two disagree on data type or length, the JSON schema remains the source of
 truth for the physical database, and the rules below define the business/import
 expectation.

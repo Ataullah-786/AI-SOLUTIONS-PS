@@ -2,7 +2,7 @@
 
 **Product:** PMX  
 **Target Table:** `BMAP`  
-**Schema File:** `/PMX/Schema/BMAP.json`  
+**Schema File:** `/COMMON/PMX/Schema/BMAP.json`  
 **Source Workbook:** Import Tables - All Modules  
 **Source Worksheet:** `BMAP`
 
@@ -10,7 +10,7 @@ These rules are taken from the MRI PMX import specification workbook. They descr
 how the import file columns must be populated before the file can be integrated into
 the PMX `BMAP` table.
 
-They are **additional to** the structural rules in `/PMX/Schema/BMAP.json`.
+They are **additional to** the structural rules in `/COMMON/PMX/Schema/BMAP.json`.
 Where the two disagree on data type or length, the JSON schema remains the source of
 truth for the physical database, and the rules below define the business/import
 expectation.
@@ -130,8 +130,8 @@ is not available.
 | ---------- | ------- | ------------------ | --------------- |
 | `BANK.BANKID` | `BANKID`, `CMNBANKID` | **No** | Cannot be validated from this repository. Report as **Warning / REQUIRES DATABASE VERIFICATION** — do not report as an error. |
 | `CTYP.CASHTYPE` | `CASHTYPE` | **No** | Cannot be validated from this repository. Report as **Warning / REQUIRES DATABASE VERIFICATION** — do not report as an error. |
-| `ENTITY.ENTITYID` | `ENTITYID` | **Yes** — `/PMX/Rules/ENTITY.md` | Validate against the supplied `ENTITY` file when one is provided (**Error** if the value is not present). Otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
-| `GACC.ACCTNUM` | `ACCREXPACCT`, `ACCTNUM`, `APACCTNUM`, `DISCACCT`, `RETAINACCT`, `VENDORWITHHOLDINGACCT` | **Yes** — `/PMX/Rules/GACC.md` | Validate against the supplied `GACC` file when one is provided (**Error** if the value is not present). Otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
+| `ENTITY.ENTITYID` | `ENTITYID` | **Yes** — `/COMMON/PMX/Rules/ENTITY.md` | Validate against the supplied `ENTITY` file when one is provided (**Error** if the value is not present). Otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
+| `GACC.ACCTNUM` | `ACCREXPACCT`, `ACCTNUM`, `APACCTNUM`, `DISCACCT`, `RETAINACCT`, `VENDORWITHHOLDINGACCT` | **Yes** — `/COMMON/PMX/Rules/GACC.md` | Validate against the supplied `GACC` file when one is provided (**Error** if the value is not present). Otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
 
 > **Note:** `BANK`, `CTYP` are referenced by this worksheet but are **not** supported
 > tables in this repository — there are no schema or rules files for them. Any

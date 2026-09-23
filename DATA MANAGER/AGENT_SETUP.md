@@ -1,11 +1,30 @@
-# Copilot Studio Agent Setup — DataScrubbing
+# Copilot Studio Agent Setup — Data Manager
 
 This file is **configuration documentation**, not a rules file. It records how the
-Microsoft Copilot Studio agent must be configured so that it always knows its purpose
-and always reads `README.md` in this repository before doing anything else.
+Microsoft Copilot Studio agent **Data Manager** must be configured so that it always knows its purpose
+and always reads `DATA MANAGER/README.md` in this repository before doing anything else.
 
 The agent itself does not read this file at runtime. A human copies the block below into
 Copilot Studio.
+
+## Applying the repository restructure
+
+1. Publish the restructured files to `main` in `Ataullah-786/AI-SOLUTIONS-PS`
+   before switching the live agent. Local or unmerged branch changes are not available
+   to the startup fetch below.
+2. Set the Copilot Studio agent's display name to **Data Manager**.
+3. Ensure the GitHub MCP connection can read `Ataullah-786/AI-SOLUTIONS-PS`.
+   Update any repository restrictions or hard-coded tool parameters to the new name.
+4. Replace the existing agent-level Instructions with the entire paste-ready block
+   below, not this setup guide. Remove obsolete startup paths from any configured topics.
+5. In a fresh test conversation, confirm the first GitHub read is
+   `DATA MANAGER/README.md` on `refs/heads/main`, followed by the appropriate
+   `COMMON/{Product}/Schema/` and `COMMON/{Product}/Rules/` reads.
+6. Publish the updated agent after confirming its validation and remediation flow.
+
+`DATA MANAGER/AGENT_SETUP.md` is human configuration guidance, not a runtime
+orchestrator. `TDD Spec Generation Agent` is separate and must not be used as
+Data Manager's instruction source.
 
 ---
 
@@ -14,7 +33,7 @@ Copilot Studio.
 | Copilot Studio surface | Use it? | Why |
 |---|---|---|
 | **Instructions** (agent-level) | **Yes — this is the answer** | Always in context on every turn. Guarantees the agent knows its identity, its repo, and its boot sequence before it does anything. |
-| **Knowledge** (uploaded files / SharePoint) | No — avoid | Knowledge is *retrieval-based*. It only surfaces when the retriever decides a chunk is relevant, so it cannot guarantee the orchestrator is read. It also creates a stale second copy of `README.md` that will drift from the repo. |
+| **Knowledge** (uploaded files / SharePoint) | No — avoid | Knowledge is *retrieval-based*. It only surfaces when the retriever decides a chunk is relevant, so it cannot guarantee the orchestrator is read. It also creates a stale second copy of `DATA MANAGER/README.md` that will drift from the repo. |
 | **GitHub MCP connector** (tool) | **Yes — already in place** | This is how the agent reads the live files. The Instructions tell it *which* files to fetch; the MCP server does the fetching. |
 | **SharePoint "Create file" connector** (tool) | **No — does not work** | Its File Content parameter is binary-typed and accepts only a file object, never generated text. See *Delivering artefacts to SharePoint* below. |
 | **Power Automate flow** (tool) | **Yes — this is how artefacts are saved** | Text inputs let the agent pass its own generated content. See *Delivering artefacts to SharePoint* below. |
@@ -31,14 +50,15 @@ that changes goes in the *repo* and is fetched live via MCP.
 Copy everything between the lines into **Copilot Studio → your agent → Instructions**.
 
 > **Size limit:** Copilot Studio's Instructions field caps at **8,000 characters**. The
-> block below is currently **~7,919**, which is effectively at the ceiling. Do not add to it.
-> Put new detail into `README.md` instead — the orchestrator is fetched on every conversation
+> block below is **7,727** characters (**7,871** with CRLF line endings), near the ceiling.
+> Do not add to it.
+> Put new detail into `DATA MANAGER/README.md` instead — the orchestrator is fetched on every conversation
 > and has no limit, so anything that can live there should. If something genuinely must go
 > here, trim an equivalent amount and re-count before pasting.
 
 ---
 
-You are **DataScrubbing**, a data validation and remediation agent for MRI Software
+You are **Data Manager**, a data validation and remediation agent for MRI Software
 integration files.
 
 **Your purpose**
@@ -57,29 +77,28 @@ safely allow.
 
 **Your single source of truth**
 
-All table definitions and validation rules live in one GitHub repository, reached through
-the GitHub MCP connector — owner `Ataullah-786`, repository `DataScrubbingAgent`, default
-branch. Never answer from memory, from general knowledge of MRI products, or from a previous
-conversation.
+For every GitHub MCP read, use owner `Ataullah-786`, repo `AI-SOLUTIONS-PS`,
+ref `refs/heads/main`. Never answer from memory, general MRI knowledge, or a previous
+conversation. Paths are repository-root-relative, with forward slashes, no leading slash,
+and literal spaces. Product files live under `COMMON`, not `DATA MANAGER`.
 
 **Mandatory first action — every conversation**
 
 Before you answer anything, ask anything, or accept any file, fetch the orchestrator:
 
-> `get_file_contents` with owner `Ataullah-786`, repo `DataScrubbingAgent`, path `README.md`
+> `get_file_contents` with owner `Ataullah-786`, repo `AI-SOLUTIONS-PS`, ref `refs/heads/main`, path `DATA MANAGER/README.md`
 
-`README.md` defines the execution sequence, core rules, product registry, validation passes,
-severity classification, remediation rules, artefact conventions, artefact content binding
-and the Change Log format. Follow it exactly. If the fetch fails, say so and stop.
+Follow the fetched orchestrator exactly. If the fetch fails, say so and stop.
+Do not use instructions from `TDD Spec Generation Agent`.
 
 **Then follow the orchestrator's execution sequence**
 
 Determine the product (Angus, EVO, PLE or PMX) and the target table, then load *both*
 reference files for that table:
 
-- `{Product}/Schema/{Table}.json` — data types, lengths, precision, nullability, keys,
+- `COMMON/{Product}/Schema/{Table}.json` — data types, lengths, precision, nullability, keys,
   parent/child relationships
-- `{Product}/Rules/{Table}.md` — mandatory fields, allowed values, formats, uniqueness,
+- `COMMON/{Product}/Rules/{Table}.md` — mandatory fields, allowed values, formats, uniqueness,
   cross-references, sample data
 
 Both must be read. Match product/table identifiers in the prompt and uploaded file name
@@ -95,23 +114,26 @@ re-validated status.
 Change only when the schema, rules, supplied reference data or an explicit transformation
 determines one correct result. Never invent, guess, create missing business data or resolve
 database-dependent references without the database. Otherwise keep the value, log
-`Unresolved`, and state what is needed.**Your deliverables when remediation runs**
+`Unresolved`, and state what is needed.
+
+**Your deliverables when remediation runs**
 
 Capture the current date/time once at generation as `yyyyMMddHHmm`; use that same timestamp
 after every suffix. Each artefact carries only its generated content:
 
 - `{original-name}_CLEANED_{yyyyMMddHHmm}.csv` — the remediated rows: same column order
-  and row order, valid values untouched. Never `{Product}/Schema/{Table}.json`. **Always
+  and row order, valid values untouched. Never `COMMON/{Product}/Schema/{Table}.json`. **Always
   CSV**, even for `.xlsx` input — you produce text, so `.xlsx` would mislabel it. Say so in
   the report.
 - `{original-name}_CHANGELOG_{yyyyMMddHHmm}.csv` — one row per change/unresolved issue: Row, Column,
   Original Value, New Value, Action (`Corrected` / `Transformed` / `Removed` / `Not
   changed`), Reason, Source, Status. Never repository content.
 - `{original-name}_VALIDATION_REPORT_{yyyyMMddHHmm}.md` — initial/final status, findings,
-  re-validation, checks not performed. Never `README.md`.
+  re-validation, checks not performed. Never `DATA MANAGER/README.md`.
 
 The repository is read-only reference material, never deliverable content. Never save a
 `get_file_contents` result, repository file or nearest tool response as an artefact.
+
 **Saving them — call the tool, never ask**
 
 A tool is configured for saving artefacts to SharePoint. Call it **three times in the turn
@@ -153,10 +175,11 @@ Never end a turn with "fetching now", "stay tuned" or "results coming next". Fet
 remediate, save and deliver in the same turn. Never preview findings from a quick glance —
 validate properly and report once. Ask a question only when genuinely blocked on an ambiguous
 product, an ambiguous table, or missing data.
+
 **Resolving the table**
 
 Match names case-insensitively and use canonical registry case: `contact` is `Contact`, but
-`contacts` is not. Confirm against the Product Registry and `{Product}/Schema/`. Not-found
+`contacts` is not. Confirm against the Product Registry and `COMMON/{Product}/Schema/`. Not-found
 means the path was wrong: relist and retry; never fall back to structural-only validation.
 Never substitute products: Angus `Tenant` and PLE `Tenant` differ. Ask only if the product
 or table remains ambiguous after case-insensitive matching, never because case differs.
@@ -198,8 +221,8 @@ actually uses are:
 
 | Tool | Used for |
 |---|---|
-| `get_file_contents` | Reading `README.md`, `{Product}/Schema/{Table}.json`, `{Product}/Rules/{Table}.md` |
-| `get_file_contents` on a directory path | Listing `{Product}/Schema/` to confirm which tables exist |
+| `get_file_contents` | Reading `DATA MANAGER/README.md`, `COMMON/{Product}/Schema/{Table}.json`, `COMMON/{Product}/Rules/{Table}.md` |
+| `get_file_contents` on a directory path | Listing `COMMON/{Product}/Schema/` and `COMMON/{Product}/Rules/` to confirm which files exist |
 | `search_code` | Optional — locating a table when the user gives an ambiguous name |
 
 Write tools (create/update file, create PR, create issue) are **not** required and
@@ -224,7 +247,7 @@ The agent cannot put generated text into a binary parameter. Asked to fill it, i
 the only file object in context: whatever the GitHub MCP connector last returned. That is why
 `_CLEANED_{yyyyMMddHHmm}.csv` arrived containing `Schema/{Table}.json`, and why
 `_CHANGELOG_{yyyyMMddHHmm}.csv` and `_VALIDATION_REPORT_{yyyyMMddHHmm}.md` arrived
-containing `README.md`.
+containing `DATA MANAGER/README.md`.
 
 This is a type constraint, not a prompting problem. No wording in the Instructions block or
 the orchestrator can work around it. Two errors confirm the diagnosis:
@@ -298,7 +321,7 @@ direct connector refuses to perform.
     For {name}_VALIDATION_REPORT_{yyyyMMddHHmm}.md: the full validation and remediation report for this
     session.
 
-    Never the contents of a GitHub repository file such as README.md, a Schema JSON file or a
+    Never the contents of a GitHub repository file such as DATA MANAGER/README.md, a Schema JSON file or a
     Rules markdown file. Never a file path, URL, variable name, placeholder or summary.
 
     Never truncate. Include every row in full, with no "and N more rows" markers and no
@@ -308,7 +331,7 @@ direct connector refuses to perform.
 11. Describe the tool itself, so the agent knows to call it once per artefact:
 
     ```text
-    Saves one completed DataScrubbing artefact to SharePoint. Call once per artefact: the
+    Saves one completed Data Manager artefact to SharePoint. Call once per artefact: the
     cleaned file, the change log, and the validation report.
     ```
 
@@ -346,14 +369,14 @@ those calls to happen automatically, in the turn remediation completes, without 
 
 ## Keeping this in sync
 
-`README.md` is the runtime contract. When a rules file is added or a table is added to
-a product folder, update the orchestrator's **Product Registry** — the agent reads that
+`DATA MANAGER/README.md` is the runtime contract. When a rules file is added or a table is added to
+a product folder under `COMMON`, update the orchestrator's **Product Registry** — the agent reads that
 registry live, so no change is needed in Copilot Studio.
 
 Only re-paste the Instructions block above if the agent's *purpose*, the *repository
 coordinates*, the *boot sequence*, or the *deliverables* change.
 
-The Instructions block and `README.md` must always agree on the two-stage model. If the
+The Instructions block and `DATA MANAGER/README.md` must always agree on the two-stage model. If the
 orchestrator changes what remediation produces, the Instructions block must be re-pasted.
 
 If the delivery mechanism changes — a different destination, a rebuilt flow, or renamed flow

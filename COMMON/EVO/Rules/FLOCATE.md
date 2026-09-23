@@ -2,7 +2,7 @@
 
 **Product:** EVO
 **Target Table:** `FLOCATE`
-**Schema File:** `/EVO/Schema/FLOCATE.json`
+**Schema File:** `/COMMON/EVO/Schema/FLOCATE.json`
 **Source Workbook:** MRI Evolution Data Collection Sheet (`4/492 Iss 7`, v5.3.0)
 **Source Worksheet:** `Buildings`
 
@@ -10,7 +10,7 @@ These rules are taken from the MRI Evolution Data Collection Sheet. They describ
 intake (collection sheet) columns must be populated before the file can be integrated into
 the EVO `FLOCATE` table.
 
-They are **additional to** the structural rules in `/EVO/Schema/FLOCATE.json`.
+They are **additional to** the structural rules in `/COMMON/EVO/Schema/FLOCATE.json`.
 Where the two disagree on data type or length, the JSON schema remains the source of
 truth for the physical database, and the rules below define the business/intake expectation.
 
@@ -71,7 +71,7 @@ All other columns are at the client's discretion and may be left blank.
 
 ### Maximum Length
 
-Report an **Error** where the supplied value exceeds the stated length. Per `README.md`,
+Report an **Error** where the supplied value exceeds the stated length. Per `DATA MANAGER/README.md`,
 report the **stricter** of the worksheet and schema limits and note any discrepancy.
 
 | Column | Worksheet Max Length | Schema Column | Schema `MaxLength` (bytes) | Effective Characters | Stricter |
@@ -91,7 +91,7 @@ report the **stricter** of the worksheet and schema limits and note any discrepa
 | External Identifier | 100 | `ExtIdentifier` | 200 | 100 | Equal (100) |
 | SIte - Building | 100 | *(not imported)* | — | — | Worksheet (100) |
 
-`nvarchar` columns in `/EVO/Schema/FLOCATE.json` record `MaxLength` in **bytes**. The
+`nvarchar` columns in `/COMMON/EVO/Schema/FLOCATE.json` record `MaxLength` in **bytes**. The
 character limit is `MaxLength / 2`.
 
 ### Data Type Expectations
@@ -148,8 +148,8 @@ source list is an **Error** when that source worksheet was supplied, and a
 ### Cross-Reference Rules
 
 * The `SIte - Building` values produced here are the authoritative drop-down source for:
-  * `/EVO/Rules/BuildingFloors.md` — the `Site - Building` column
-  * `/EVO/Rules/FAREALO.md` — the `Site - Building Name` column
+  * `/COMMON/EVO/Rules/BuildingFloors.md` — the `Site - Building` column
+  * `/COMMON/EVO/Rules/FAREALO.md` — the `Site - Building Name` column
 * Any value used on those worksheets that does not appear here is an **Error** when the
   `Buildings` sheet was supplied, and a **Warning / REQUIRES DATABASE VERIFICATION**
   when it was not.
@@ -169,7 +169,7 @@ that a reference is valid or invalid when the referenced data is not available.
 | Cost Centre (`CostCentreId`) | *(not collected here)* | **No** | Not an intake column on this worksheet. |
 | Client (`BG_FKEY_CLNT_SEQ`, `ClientId`) | *(not collected here)* | **No** | Not an intake column on this worksheet. |
 
-> **Note:** `FLOCATE` has 145 columns in `/EVO/Schema/FLOCATE.json`, of which only the 15
+> **Note:** `FLOCATE` has 145 columns in `/COMMON/EVO/Schema/FLOCATE.json`, of which only the 15
 > intake columns above are collected on this worksheet. `BG_SEQ` is the identity primary
 > key; the remaining columns (property valuations, lease details, floor and parking counts,
 > opening days, authorities, user-defined fields, audit columns and the `…Utc` / `…TZ`

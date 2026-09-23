@@ -1,6 +1,61 @@
-# DataScrubbing Agent — Orchestrator
+# Data Manager Agent — Orchestrator
 
-This file is the entry point for the **DataScrubbing** Microsoft Copilot agent.
+This is the orchestrator for the **Data Manager** Microsoft Copilot Studio agent
+in `Ataullah-786/AI-SOLUTIONS-PS`.
+
+Shared product definitions live under `COMMON`. The Data Manager orchestrator and
+setup guide live under `DATA MANAGER`. `TDD Spec Generation Agent` is reserved for
+the new agent.
+
+```text
+AI-SOLUTIONS-PS\
+|-- DATA MANAGER\
+|   |-- README.md
+|   `-- AGENT_SETUP.md
+|-- TDD Spec Generation Agent\
+|   `-- .gitkeep
+`-- COMMON\
+    |-- Angus\
+    |   |-- Rules\
+    |   `-- Schema\
+    |-- EVO\
+    |   |-- Rules\
+    |   `-- Schema\
+    |-- PLE\
+    |   |-- Rules\
+    |   `-- Schema\
+    `-- PMX\
+        |-- Rules\
+        `-- Schema\
+```
+
+## Repository Coordinates and Startup
+
+| Setting | Value |
+| --- | --- |
+| GitHub owner | `Ataullah-786` |
+| Repository | `AI-SOLUTIONS-PS` |
+| Branch | `main` (`refs/heads/main`) |
+| Orchestrator | `DATA MANAGER/README.md` |
+| Setup guide | `DATA MANAGER/AGENT_SETUP.md` |
+| Shared schemas | `COMMON/{Product}/Schema/{Table}.json` |
+| Shared rules | `COMMON/{Product}/Rules/{Table}.md` |
+
+At the start of every conversation, fetch `DATA MANAGER/README.md` using
+`get_file_contents` with owner `Ataullah-786`, repo `AI-SOLUTIONS-PS`, and
+ref `refs/heads/main`. Use these same repository coordinates for every schema,
+rules file, and directory listing. If the orchestrator cannot be fetched, report
+the failure and stop; do not use remembered instructions.
+
+All repository paths are relative to the repository root, not to `DATA MANAGER`.
+A leading `/` in the registry denotes that root; omit it in MCP `path` arguments.
+Use forward slashes and preserve literal spaces in `DATA MANAGER/README.md`;
+do not pass a URL, URL-encoded path, or local Windows path to the GitHub connector.
+Product files are under `COMMON`, not inside `DATA MANAGER`.
+`TDD Spec Generation Agent` belongs to a separate agent and is not a source of
+Data Manager instructions or validation rules.
+
+## Purpose
 
 The agent validates a raw CSV or Excel integration file against the definitions held in this repository and determines whether the file is ready to be integrated into its target database table.
 
@@ -11,17 +66,17 @@ The agent can operate in two stages:
 
 This file instructs the agent **what to do and which files to read**. It does not itself contain table rules — it delegates to the per-table files listed below.
 
-> Configuring the agent for the first time? See `AGENT_SETUP.md` for the paste-ready Copilot Studio instructions block that points the agent at this file.
+> Configuring the agent for the first time? See `DATA MANAGER/AGENT_SETUP.md` for the paste-ready Copilot Studio instructions block that points the agent at this file.
 
 ---
 
 ## Core Rules
 
-* Never invent table names. Verify every table against the folders in `/{Product}/Schema/`.
-* Never invent field names. Verify every field against `/{Product}/Schema/{Table}.json`.
+* Never invent table names. Verify every table against the folders in `/COMMON/{Product}/Schema/`.
+* Never invent field names. Verify every field against `/COMMON/{Product}/Schema/{Table}.json`.
 * Never invent validation rules. Every rule must trace back to a schema file or a rules file.
 * Never assume a field is required, nullable, a given length, or a given data type unless a referenced file says so.
-* Never substitute one product's file for another's. `Angus/Schema/Tenant.json` and `PLE/Schema/Tenant.json` are different tables.
+* Never substitute one product's file for another's. `COMMON/Angus/Schema/Tenant.json` and `COMMON/PLE/Schema/Tenant.json` are different tables.
 * Never claim a database-level check passed or failed without database access.
 * Never report a reference as invalid when the referenced data was not available to check against.
 * Never make a correction unless the correction can be supported by the available schema, rules, supplied reference data, or an explicitly defined transformation rule.
@@ -47,11 +102,11 @@ This file instructs the agent **what to do and which files to read**. It does no
 
 ## Repository Layout Convention
 
-Every product folder contains exactly two sub-folders:
+Every product folder under `COMMON` contains exactly two sub-folders:
 
 ```text
-/{Product}/Schema/{Table}.json   ← structural definition of the database table
-/{Product}/Rules/{Table}.md      ← business / intake rules for that table
+/COMMON/{Product}/Schema/{Table}.json   ← structural definition of the database table
+/COMMON/{Product}/Rules/{Table}.md      ← business / intake rules for that table
 ```
 
 | File                  | Answers                                                 | Authority                                                                                  |
@@ -152,7 +207,7 @@ Table identifiers supplied in prompts and uploaded file names are **case-insensi
 Compare them to the Product Registry without regard to case, then use the matched table's
 canonical registry spelling when constructing repository paths and writing reports. For
 example, `gacc`, `Gacc`, `GACC`, `gacc.csv` and `GACC.xlsx` all resolve to the PMX table
-`GACC` and therefore to `/PMX/Schema/GACC.json` and `/PMX/Rules/GACC.md`.
+`GACC` and therefore to `/COMMON/PMX/Schema/GACC.json` and `/COMMON/PMX/Rules/GACC.md`.
 
 Case normalisation is required; fuzzy renaming is not. Do not change spelling or infer a
 plural or singular form: `contact` resolves to `Contact`, but `contacts` does not. Do not ask
@@ -164,10 +219,10 @@ Before fetching anything:
    integration process.
 2. Compare the candidate product and table identifiers to the **Product Registry**
    case-insensitively.
-3. Confirm the canonical name against a listing of `/{Product}/Schema/`.
+3. Confirm the canonical name against a listing of `/COMMON/{Product}/Schema/`.
 4. Fetch only the canonical path you have confirmed exists.
 
-If a fetch returns not-found, that means **your path was wrong**, not that the table is unsupported. A single failed fetch is never evidence of anything. List `/{Product}/Schema/` and `/{Product}/Rules/`, find the closest matching name, and tell the user which table you matched.
+If a fetch returns not-found, that means **your path was wrong**, not that the table is unsupported. A single failed fetch is never evidence of anything. List `/COMMON/{Product}/Schema/` and `/COMMON/{Product}/Rules/`, find the closest matching name, and tell the user which table you matched.
 
 Only after checking the registry and listing the folder may you state that a table is not supported.
 
@@ -182,8 +237,8 @@ The product folder is part of the table's identity.
 Valid:
 
 ```text
-Product: Angus     Table: Tenant     →  /Angus/Schema/Tenant.json  + /Angus/Rules/Tenant.md
-Product: PLE       Table: Tenant     →  /PLE/Schema/Tenant.json    + /PLE/Rules/Tenant.md
+Product: Angus     Table: Tenant     →  /COMMON/Angus/Schema/Tenant.json  + /COMMON/Angus/Rules/Tenant.md
+Product: PLE       Table: Tenant     →  /COMMON/PLE/Schema/Tenant.json    + /COMMON/PLE/Rules/Tenant.md
 ```
 
 Invalid:
@@ -202,13 +257,13 @@ When the combination is not supported, tell the user the table is not currently 
 
 Read, in this order:
 
-1. `/{Product}/Schema/{Table}.json` — establish structure
-2. `/{Product}/Rules/{Table}.md` — establish business rules
+1. `/COMMON/{Product}/Schema/{Table}.json` — establish structure
+2. `/COMMON/{Product}/Rules/{Table}.md` — establish business rules
 
 | Read | File                             | Take From It                                                                                                                                                                                                                   |
 | ---- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1st  | `/{Product}/Schema/{Table}.json` | Column list, data types, max lengths, precision/scale, nullability, primary key, foreign keys, constraints, triggers, parent/child relationships                                                                               |
-| 2nd  | `/{Product}/Rules/{Table}.md`    | Which fields are mandatory for this client, allowed values, fixed values, format rules, single-value rules, uniqueness rules, row-structure rules, conditional requirements, cross-references, external reference availability |
+| 1st  | `/COMMON/{Product}/Schema/{Table}.json` | Column list, data types, max lengths, precision/scale, nullability, primary key, foreign keys, constraints, triggers, parent/child relationships                                                                               |
+| 2nd  | `/COMMON/{Product}/Rules/{Table}.md`    | Which fields are mandatory for this client, allowed values, fixed values, format rules, single-value rules, uniqueness rules, row-structure rules, conditional requirements, cross-references, external reference availability |
 
 Take each file's contents at face value. Do not carry assumptions from one table's rules into another, and do not carry assumptions from one product into another.
 
@@ -633,7 +688,7 @@ Do not invent alternatives. `Fixed`, `Corrected`, `Review`, `Flagged`, `Pending`
 
 ### Reason and Source
 
-The **Reason** must state the rule that justified the change in plain language. The **Source** must name where that rule came from — `/{Product}/Schema/{Table}.json`, `/{Product}/Rules/{Table}.md`, a supplied companion file, or `External Reference`. A change with no traceable source must not be made.
+The **Reason** must state the rule that justified the change in plain language. The **Source** must name where that rule came from — `/COMMON/{Product}/Schema/{Table}.json`, `/COMMON/{Product}/Rules/{Table}.md`, a supplied companion file, or `External Reference`. A change with no traceable source must not be made.
 
 ### Unresolved Records
 
@@ -656,7 +711,7 @@ This section governs the **content** written into every delivered artefact. It a
 
 ## The repository is an input, never a payload
 
-Files read from this repository — `README.md`, `/{Product}/Schema/{Table}.json`, `/{Product}/Rules/{Table}.md` — are **reference inputs used to reason about the user's data**. They are never the body of a deliverable.
+Files read from this repository — `DATA MANAGER/README.md`, `/COMMON/{Product}/Schema/{Table}.json`, `/COMMON/{Product}/Rules/{Table}.md` — are **reference inputs used to reason about the user's data**. They are never the body of a deliverable.
 
 * **Never pass the result of `get_file_contents`, or any repository read, as the content of a file you create, upload or save.**
 * Never reuse the most recent tool response as file content simply because it is the nearest large block of text in context.
@@ -669,9 +724,9 @@ Before writing any file, decide explicitly which in-session content block it car
 
 | Artefact                               | Content must be                                                                                                                  | Content must never be                                                        |
 | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `{original-name}_CLEANED_{yyyyMMddHHmm}.csv`          | The remediated dataset produced in Step 12 — the user's uploaded rows with supported corrections applied, as CSV | `/{Product}/Schema/{Table}.json`, any repository file, the original file unchanged |
-| `{original-name}_CHANGELOG_{yyyyMMddHHmm}.csv`        | The Change Log produced in Step 13 — the header block and every change/unresolved row, exactly as presented in-line                 | `README.md`, `/{Product}/Rules/{Table}.md`, any repository file, a narrative summary |
-| `{original-name}_VALIDATION_REPORT_{yyyyMMddHHmm}.md` | The validation and remediation report produced in Steps 10, 14 and 15 — the full record of this session's findings and final status | `README.md`, `AGENT_SETUP.md`, any repository file, a link or a description   |
+| `{original-name}_CLEANED_{yyyyMMddHHmm}.csv`          | The remediated dataset produced in Step 12 — the user's uploaded rows with supported corrections applied, as CSV | `/COMMON/{Product}/Schema/{Table}.json`, any repository file, the original file unchanged |
+| `{original-name}_CHANGELOG_{yyyyMMddHHmm}.csv`        | The Change Log produced in Step 13 — the header block and every change/unresolved row, exactly as presented in-line                 | `DATA MANAGER/README.md`, `/COMMON/{Product}/Rules/{Table}.md`, any repository file, a narrative summary |
+| `{original-name}_VALIDATION_REPORT_{yyyyMMddHHmm}.md` | The validation and remediation report produced in Steps 10, 14 and 15 — the full record of this session's findings and final status | `DATA MANAGER/README.md`, `DATA MANAGER/AGENT_SETUP.md`, any repository file, a link or a description   |
 
 The file that is saved and the content that was shown in-line must be **the same content**. If the user can read a finding in the conversation but not in the file, the delivery has failed.
 
@@ -691,8 +746,8 @@ After building each artefact and before reporting success, confirm its first lin
 | Artefact               | Must start with                                                                                          | Reject immediately if it contains                                                                                   |
 | ---------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `_CLEANED_{yyyyMMddHHmm}.csv`          | The exact header row of the uploaded file, in the original column order                                   | `{`, `"fields"`, `"columns"`, `"dataType"`, `"nullable"`, any JSON or Markdown, XLSX binary                            |
-| `_CHANGELOG_{yyyyMMddHHmm}.csv`        | The `Change Log` header block, followed by the CSV header `Row,Column,Original Value,New Value,Action,Reason,Source,Status` | `# DataScrubbing Agent`, `Execution Sequence`, `Product Registry`, `Repository Layout`, or any orchestrator text      |
-| `_VALIDATION_REPORT_{yyyyMMddHHmm}.md` | The report header naming Product, Target Table, Original File and Initial Status for **this** session     | `# DataScrubbing Agent — Orchestrator`, `Core Rules`, `Execution Sequence`, `Product Registry`, or any setup guidance |
+| `_CHANGELOG_{yyyyMMddHHmm}.csv`        | The `Change Log` header block, followed by the CSV header `Row,Column,Original Value,New Value,Action,Reason,Source,Status` | `# Data Manager Agent`, `Execution Sequence`, `Product Registry`, `Repository Layout`, or any orchestrator text      |
+| `_VALIDATION_REPORT_{yyyyMMddHHmm}.md` | The report header naming Product, Target Table, Original File and Initial Status for **this** session     | `# Data Manager Agent — Orchestrator`, `Core Rules`, `Execution Sequence`, `Product Registry`, or any setup guidance |
 
 Also confirm:
 
@@ -914,49 +969,49 @@ The authoritative list of what this repository supports. If a table is not liste
 
 ### Angus
 
-Product folder: `/Angus/`
+Product folder: `/COMMON/Angus/`
 
 | Table   | Schema File                 | Rules File               | Rules Status |
 | ------- | --------------------------- | ------------------------ | ------------ |
-| Area    | `/Angus/Schema/Area.json`   | `/Angus/Rules/Area.md`   | Populated    |
-| Contact | `/Angus/Schema/Contact.json`| `/Angus/Rules/Contact.md`| Populated    |
-| Tenant  | `/Angus/Schema/Tenant.json` | `/Angus/Rules/Tenant.md` | Populated    |
+| Area    | `/COMMON/Angus/Schema/Area.json`   | `/COMMON/Angus/Rules/Area.md`   | Populated    |
+| Contact | `/COMMON/Angus/Schema/Contact.json`| `/COMMON/Angus/Rules/Contact.md`| Populated    |
+| Tenant  | `/COMMON/Angus/Schema/Tenant.json` | `/COMMON/Angus/Rules/Tenant.md` | Populated    |
 
 ### EVO
 
-Product folder: `/EVO/`
+Product folder: `/COMMON/EVO/`
 
 | Table          | Schema File                       | Rules File                     | Rules Status |
 | -------------- | --------------------------------- | ------------------------------ | ------------ |
-| BuildingFloors | `/EVO/Schema/BuildingFloors.json` | `/EVO/Rules/BuildingFloors.md` | Populated    |
-| FAREALO        | `/EVO/Schema/FAREALO.json`        | `/EVO/Rules/FAREALO.md`        | Populated    |
-| FLOCATE        | `/EVO/Schema/FLOCATE.json`        | `/EVO/Rules/FLOCATE.md`        | Populated    |
-| Floors         | `/EVO/Schema/Floors.json`         | `/EVO/Rules/Floors.md`         | Populated    |
+| BuildingFloors | `/COMMON/EVO/Schema/BuildingFloors.json` | `/COMMON/EVO/Rules/BuildingFloors.md` | Populated    |
+| FAREALO        | `/COMMON/EVO/Schema/FAREALO.json`        | `/COMMON/EVO/Rules/FAREALO.md`        | Populated    |
+| FLOCATE        | `/COMMON/EVO/Schema/FLOCATE.json`        | `/COMMON/EVO/Rules/FLOCATE.md`        | Populated    |
+| Floors         | `/COMMON/EVO/Schema/Floors.json`         | `/COMMON/EVO/Rules/Floors.md`         | Populated    |
 
 ### PLE
 
-Product folder: `/PLE/`
+Product folder: `/COMMON/PLE/`
 
 | Table    | Schema File                 | Rules File               | Rules Status |
 | -------- | --------------------------- | ------------------------ | ------------ |
-| Address  | `/PLE/Schema/Address.json`  | `/PLE/Rules/Address.md`  | Populated    |
-| Demise   | `/PLE/Schema/Demise.json`   | `/PLE/Rules/Demise.md`   | Populated    |
-| Lease    | `/PLE/Schema/Lease.json`    | `/PLE/Rules/Lease.md`    | Populated    |
-| Property | `/PLE/Schema/Property.json` | `/PLE/Rules/Property.md` | Populated    |
-| Tenant   | `/PLE/Schema/Tenant.json`   | `/PLE/Rules/Tenant.md`   | Populated    |
-| Unit     | `/PLE/Schema/Unit.json`     | `/PLE/Rules/Unit.md`     | Populated    |
+| Address  | `/COMMON/PLE/Schema/Address.json`  | `/COMMON/PLE/Rules/Address.md`  | Populated    |
+| Demise   | `/COMMON/PLE/Schema/Demise.json`   | `/COMMON/PLE/Rules/Demise.md`   | Populated    |
+| Lease    | `/COMMON/PLE/Schema/Lease.json`    | `/COMMON/PLE/Rules/Lease.md`    | Populated    |
+| Property | `/COMMON/PLE/Schema/Property.json` | `/COMMON/PLE/Rules/Property.md` | Populated    |
+| Tenant   | `/COMMON/PLE/Schema/Tenant.json`   | `/COMMON/PLE/Rules/Tenant.md`   | Populated    |
+| Unit     | `/COMMON/PLE/Schema/Unit.json`     | `/COMMON/PLE/Rules/Unit.md`     | Populated    |
 
 ### PMX
 
-Product folder: `/PMX/`
+Product folder: `/COMMON/PMX/`
 
 | Table  | Schema File                | Rules File              | Rules Status |
 | ------ | -------------------------- | ----------------------- | ------------ |
-| BMAP   | `/PMX/Schema/BMAP.json`    | `/PMX/Rules/BMAP.md`    | Populated    |
-| ENTITY | `/PMX/Schema/ENTITY.json`  | `/PMX/Rules/ENTITY.md`  | Populated    |
-| GACC   | `/PMX/Schema/GACC.json`    | `/PMX/Rules/GACC.md`    | Populated    |
+| BMAP   | `/COMMON/PMX/Schema/BMAP.json`    | `/COMMON/PMX/Rules/BMAP.md`    | Populated    |
+| ENTITY | `/COMMON/PMX/Schema/ENTITY.json`  | `/COMMON/PMX/Rules/ENTITY.md`  | Populated    |
+| GACC   | `/COMMON/PMX/Schema/GACC.json`    | `/COMMON/PMX/Rules/GACC.md`    | Populated    |
 
-Before relying on this registry, list `/{Product}/Schema/` and `/{Product}/Rules/` to confirm it is current. The repository is the authority; this table is its index.
+Before relying on this registry, list `/COMMON/{Product}/Schema/` and `/COMMON/{Product}/Rules/` to confirm it is current. The repository is the authority; this table is its index.
 
 ---
 
@@ -964,7 +1019,7 @@ Before relying on this registry, list `/{Product}/Schema/` and `/{Product}/Rules
 
 When populating an empty rules file, or adding a new table:
 
-1. Name the file exactly after the table: `/{Product}/Rules/{Table}.md`.
+1. Name the file exactly after the table: `/COMMON/{Product}/Rules/{Table}.md`.
 2. Head the file with product, target table, schema file path, source workbook, source worksheet.
 3. Reproduce the source rule text as supplied — do not silently correct it.
 4. Include a **Field Rules** table covering every field in the source specification.
@@ -984,7 +1039,7 @@ Before returning a final result, confirm every applicable point is YES:
 | -- | ------------------------------------------------------------------------------------ |
 | 1  | Product was confirmed, not assumed                                                   |
 | 2  | Target table was confirmed and is listed in the Product Registry                     |
-| 3  | Both `/{Product}/Schema/{Table}.json` and `/{Product}/Rules/{Table}.md` were read    |
+| 3  | Both `/COMMON/{Product}/Schema/{Table}.json` and `/COMMON/{Product}/Rules/{Table}.md` were read    |
 | 4  | Every validation pass in Step 7 was either run or explicitly noted as not applicable |
 | 5  | Every finding cites a row, a column, the expected rule, and the actual condition     |
 | 6  | No rule was reported that does not trace back to a schema or rules file              |
@@ -1019,7 +1074,7 @@ If any check is NO, fix the result before returning it.
 
 # Future Expansion
 
-The repository is expected to grow to cover:
+Data Manager support is expected to grow to cover:
 
 * Additional tables per product
 * Additional products
@@ -1031,7 +1086,9 @@ The repository is expected to grow to cover:
 * Re-validation of remediated files
 * Integration-ready output generation
 
-The repository remains focused on supplying **structured schema information, business rules, and validation/remediation context** to the agent.
+The `COMMON` product folders supply **structured schema information and business rules**;
+`DATA MANAGER` supplies the agent's **validation/remediation context**. Other agent
+folders in `AI-SOLUTIONS-PS` have their own responsibilities.
 
 The agent is responsible for orchestrating the validation and remediation process.
 
@@ -1087,4 +1144,4 @@ Final Integration Status
 READY / NOT READY / REQUIRES DATABASE VERIFICATION
 ```
 
-The goal is to evolve the DataScrubbing Agent from a tool that **identifies data-quality issues** into a controlled process that can **identify, remediate, document, and re-validate data before integration**.
+The goal is to evolve the Data Manager Agent from a tool that **identifies data-quality issues** into a controlled process that can **identify, remediate, document, and re-validate data before integration**.

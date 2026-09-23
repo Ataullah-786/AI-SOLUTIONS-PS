@@ -2,7 +2,7 @@
 
 **Product:** Angus
 **Target Table:** `Tenant`
-**Schema File:** `/Angus/Schema/Tenant.json`
+**Schema File:** `/COMMON/Angus/Schema/Tenant.json`
 **Source Workbook:** MRI Angus Data Collection Sheet
 **Source Worksheet:** `Tenant`
 
@@ -10,7 +10,7 @@ These rules are taken from the MRI Angus Data Collection Sheet. They describe ho
 intake (collection sheet) columns must be populated before the file can be integrated
 into the Angus `Tenant` table.
 
-They are **additional to** the structural rules in `/Angus/Schema/Tenant.json`.
+They are **additional to** the structural rules in `/COMMON/Angus/Schema/Tenant.json`.
 Where the two disagree on data type or length, the JSON schema remains the source of
 truth for the physical database, and the rules below define the business/intake expectation.
 
@@ -82,7 +82,7 @@ Report an **Error** where the supplied value exceeds the stated length:
 ### Cross-Reference Rules
 
 * `Floor Name` must match a Floor Name present on the **Area** worksheet
-  (`/Angus/Rules/Area.md`). A value not present there is an **Error** when the Area file
+  (`/COMMON/Angus/Rules/Area.md`). A value not present there is an **Error** when the Area file
   is available for comparison; otherwise report a **Warning**.
 * `Suite Name` should correspond to a suite/location defined for the same
   Property Name + Building Name + Floor Name combination.
@@ -99,7 +99,7 @@ available.
 
 | Referenced | Used By | Held In This Repo? | How To Validate |
 | ---------- | ------- | ------------------ | --------------- |
-| Area worksheet | `Floor Name`, `Suite Name` | **Yes** — `/Angus/Rules/Area.md` | Validate against the supplied Area file when one is provided (**Error** if the value is not present). Otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
+| Area worksheet | `Floor Name`, `Suite Name` | **Yes** — `/COMMON/Angus/Rules/Area.md` | Validate against the supplied Area file when one is provided (**Error** if the value is not present). Otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
 | Property (MRI Angus) | `Property Name` | **No** | Cannot be validated from this repository. Report as **Warning / REQUIRES DATABASE VERIFICATION** — do not report as an error. |
 | Building (MRI Angus) | `Building Name` | **No** | Cannot be validated from this repository. Report as **Warning / REQUIRES DATABASE VERIFICATION** — do not report as an error. |
 

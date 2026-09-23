@@ -2,7 +2,7 @@
 
 **Product:** EVO
 **Target Table:** `FAREALO`
-**Schema File:** `/EVO/Schema/FAREALO.json`
+**Schema File:** `/COMMON/EVO/Schema/FAREALO.json`
 **Source Workbook:** MRI Evolution Data Collection Sheet (`4/492 Iss 7`, v5.3.0)
 **Source Worksheet:** `Locations`
 
@@ -10,7 +10,7 @@ These rules are taken from the MRI Evolution Data Collection Sheet. They describ
 intake (collection sheet) columns must be populated before the file can be integrated into
 the EVO `FAREALO` table.
 
-They are **additional to** the structural rules in `/EVO/Schema/FAREALO.json`.
+They are **additional to** the structural rules in `/COMMON/EVO/Schema/FAREALO.json`.
 Where the two disagree on data type or length, the JSON schema remains the source of
 truth for the physical database, and the rules below define the business/intake expectation.
 
@@ -73,7 +73,7 @@ data-capture omission.
 
 ### Maximum Length
 
-Report an **Error** where the supplied value exceeds the stated length. Per `README.md`,
+Report an **Error** where the supplied value exceeds the stated length. Per `DATA MANAGER/README.md`,
 report the **stricter** of the worksheet and schema limits and note any discrepancy.
 
 | Column | Worksheet Max Length | Schema Column | Schema `MaxLength` (bytes) | Effective Characters | Stricter |
@@ -97,7 +97,7 @@ report the **stricter** of the worksheet and schema limits and note any discrepa
 | Location URL | 255 | `LocationUrl` | 510 | 255 | Equal (255) |
 | Unit Weighting | — | `SchedulingWeight` (`float`) | 8 | n/a | Numeric |
 
-`nvarchar` columns in `/EVO/Schema/FAREALO.json` record `MaxLength` in **bytes**. The
+`nvarchar` columns in `/COMMON/EVO/Schema/FAREALO.json` record `MaxLength` in **bytes**. The
 character limit is `MaxLength / 2`.
 
 ### Data Type Expectations
@@ -176,9 +176,9 @@ source list is an **Error** when that source worksheet was supplied, and a
 
 ### Cross-Reference Rules
 
-* `Site - Building Name` resolves against `/EVO/Rules/FLOCATE.md`.
-* `Floor` resolves against `/EVO/Rules/Floors.md`, and the building/floor pairing resolves
-  against `/EVO/Rules/BuildingFloors.md`.
+* `Site - Building Name` resolves against `/COMMON/EVO/Rules/FLOCATE.md`.
+* `Floor` resolves against `/COMMON/EVO/Rules/Floors.md`, and the building/floor pairing resolves
+  against `/COMMON/EVO/Rules/BuildingFloors.md`.
 
 ### External References — Availability
 
@@ -188,15 +188,15 @@ that a reference is valid or invalid when the referenced data is not available.
 
 | Referenced | Used By | Held In This Repo? | How To Validate |
 | ---------- | ------- | ------------------ | --------------- |
-| Buildings (`FLOCATE`) | `Site - Building Name` | **Yes** — `/EVO/Schema/FLOCATE.json` + `/EVO/Rules/FLOCATE.md` | **Error** if the `Buildings` worksheet was supplied and the value is not found. **Warning / REQUIRES DATABASE VERIFICATION** if it was not supplied. |
-| Floors | `Floor` | **Yes** — `/EVO/Schema/Floors.json` + `/EVO/Rules/Floors.md` | **Error** if the `Floors` worksheet was supplied and the value is not found. **Warning / REQUIRES DATABASE VERIFICATION** if it was not supplied. |
-| BuildingFloors | `Floor` + `Site - Building Name` pairing | **Yes** — `/EVO/Schema/BuildingFloors.json` + `/EVO/Rules/BuildingFloors.md` | **Error** if the `BuildingFloors` worksheet was supplied and the pair is not found. **Warning / REQUIRES DATABASE VERIFICATION** if it was not supplied. |
+| Buildings (`FLOCATE`) | `Site - Building Name` | **Yes** — `/COMMON/EVO/Schema/FLOCATE.json` + `/COMMON/EVO/Rules/FLOCATE.md` | **Error** if the `Buildings` worksheet was supplied and the value is not found. **Warning / REQUIRES DATABASE VERIFICATION** if it was not supplied. |
+| Floors | `Floor` | **Yes** — `/COMMON/EVO/Schema/Floors.json` + `/COMMON/EVO/Rules/Floors.md` | **Error** if the `Floors` worksheet was supplied and the value is not found. **Warning / REQUIRES DATABASE VERIFICATION** if it was not supplied. |
+| BuildingFloors | `Floor` + `Site - Building Name` pairing | **Yes** — `/COMMON/EVO/Schema/BuildingFloors.json` + `/COMMON/EVO/Rules/BuildingFloors.md` | **Error** if the `BuildingFloors` worksheet was supplied and the pair is not found. **Warning / REQUIRES DATABASE VERIFICATION** if it was not supplied. |
 | Cost Codes | `Cost Code` | **No** | Cannot be validated from this repository. Report as **Warning / REQUIRES DATABASE VERIFICATION** — do not report as an error. |
 | Areas | `Area` | **No** | Cannot be validated from this repository. Report as **Warning / REQUIRES DATABASE VERIFICATION**. |
 | Location Type | `Location Type` | **No** | Cannot be validated from this repository. Report as **Warning / REQUIRES DATABASE VERIFICATION**. |
 | Sites | `Site - Building Name` (prefix) | **No** | Cannot be validated from this repository. Report as **Warning / REQUIRES DATABASE VERIFICATION**. |
 
-> **Note:** `FAREALO` has 78 columns in `/EVO/Schema/FAREALO.json`, of which only the 19
+> **Note:** `FAREALO` has 78 columns in `/COMMON/EVO/Schema/FAREALO.json`, of which only the 19
 > intake columns above are collected on this worksheet. `LO_SEQ` is the identity primary
 > key; the remaining columns (booking, exam and scheduling settings, stock flags, condition,
 > notes, user-defined fields, parent/scope columns and audit columns) are either nullable or

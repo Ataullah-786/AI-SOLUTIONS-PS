@@ -2,7 +2,7 @@
 
 **Product:** PMX  
 **Target Table:** `GACC`  
-**Schema File:** `/PMX/Schema/GACC.json`  
+**Schema File:** `/COMMON/PMX/Schema/GACC.json`  
 **Source Workbook:** Import Tables - All Modules  
 **Source Worksheet:** `GACC`
 
@@ -10,7 +10,7 @@ These rules are taken from the MRI PMX import specification workbook. They descr
 how the import file columns must be populated before the file can be integrated into
 the PMX `GACC` table.
 
-They are **additional to** the structural rules in `/PMX/Schema/GACC.json`.
+They are **additional to** the structural rules in `/COMMON/PMX/Schema/GACC.json`.
 Where the two disagree on data type or length, the JSON schema remains the source of
 truth for the physical database, and the rules below define the business/import
 expectation.
@@ -143,7 +143,7 @@ is not available.
 
 | Referenced | Used By | Held In This Repo? | How To Validate |
 | ---------- | ------- | ------------------ | --------------- |
-| `ENTITY.LEDGCODE` | `ACCTNUM` | **Yes** — `/PMX/Rules/ENTITY.md` | Validate against the supplied `ENTITY` file when one is provided (**Error** if the value is not present). Otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
+| `ENTITY.LEDGCODE` | `ACCTNUM` | **Yes** — `/COMMON/PMX/Rules/ENTITY.md` | Validate against the supplied `ENTITY` file when one is provided (**Error** if the value is not present). Otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
 
 ### Other Field Notes
 

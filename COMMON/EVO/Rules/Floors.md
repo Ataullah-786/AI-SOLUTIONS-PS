@@ -2,7 +2,7 @@
 
 **Product:** EVO
 **Target Table:** `Floors`
-**Schema File:** `/EVO/Schema/Floors.json`
+**Schema File:** `/COMMON/EVO/Schema/Floors.json`
 **Source Workbook:** MRI Evolution Data Collection Sheet (`4/492 Iss 7`, v5.3.0)
 **Source Worksheet:** `Floors`
 
@@ -10,7 +10,7 @@ These rules are taken from the MRI Evolution Data Collection Sheet. They describ
 intake (collection sheet) columns must be populated before the file can be integrated into
 the EVO `Floors` table.
 
-They are **additional to** the structural rules in `/EVO/Schema/Floors.json`.
+They are **additional to** the structural rules in `/COMMON/EVO/Schema/Floors.json`.
 Where the two disagree on data type or length, the JSON schema remains the source of
 truth for the physical database, and the rules below define the business/intake expectation.
 
@@ -27,7 +27,7 @@ truth for the physical database, and the rules below define the business/intake 
 | Intake Column (Worksheet) | Target Column | Type | Length | Mandatory | Rule |
 | ------------------------- | ------------- | ---- | -----: | --------- | ---- |
 | Floor | `Name` | Text (A) — Unique Value | 64 | **YES** | The floor code / short name (e.g. `B`, `G`, `1`, `2`). Must be unique across the whole worksheet.<br>See **Source Notes** — the worksheet limit of 64 exceeds the `Floors.Name` limit in the schema. |
-| Floor Description | *(no column on `Floors`)* | Text (A) | 255 | **YES** | The readable description of the floor (e.g. `Basement`, `Ground`).<br>Carried on `BuildingFloors.Description` — see `/EVO/Rules/BuildingFloors.md`. |
+| Floor Description | *(no column on `Floors`)* | Text (A) | 255 | **YES** | The readable description of the floor (e.g. `Basement`, `Ground`).<br>Carried on `BuildingFloors.Description` — see `/COMMON/EVO/Rules/BuildingFloors.md`. |
 
 ### Column Groupings (as presented on the worksheet)
 
@@ -57,8 +57,8 @@ Report an **Error** where the supplied value exceeds the stated length.
 | Floor | 64 | `Floors.Name` (`nvarchar`) | 32 | 16 |
 | Floor Description | 255 | *(not on `Floors`)* | — | — |
 
-`nvarchar` columns in `/EVO/Schema/Floors.json` record `MaxLength` in **bytes**. The
-character limit is `MaxLength / 2`. Per `README.md`, report the **stricter** of the two
+`nvarchar` columns in `/COMMON/EVO/Schema/Floors.json` record `MaxLength` in **bytes**. The
+character limit is `MaxLength / 2`. Per `DATA MANAGER/README.md`, report the **stricter** of the two
 limits and note the discrepancy — for `Floor` the schema (16 characters) is stricter than
 the worksheet (64 characters).
 
@@ -88,8 +88,8 @@ the worksheet (64 characters).
 ### Cross-Reference Rules
 
 * `Floor` values on this worksheet are the authoritative list consumed by:
-  * `/EVO/Rules/BuildingFloors.md` — the `Floor` drop-down
-  * `/EVO/Rules/FAREALO.md` — the `Floor` drop-down on the `Locations` worksheet
+  * `/COMMON/EVO/Rules/BuildingFloors.md` — the `Floor` drop-down
+  * `/COMMON/EVO/Rules/FAREALO.md` — the `Floor` drop-down on the `Locations` worksheet
 * Any `Floor` value used on those worksheets that does not appear here is an **Error** when
   the `Floors` sheet was supplied, and a **Warning / REQUIRES DATABASE VERIFICATION**
   when it was not.
@@ -103,7 +103,7 @@ that a reference is valid or invalid when the referenced data is not available.
 | Referenced | Used By | Held In This Repo? | How To Validate |
 | ---------- | ------- | ------------------ | --------------- |
 | Floor Library (`FloorLibraryId` target table) | `BuildingFloors.FloorLibraryId` | **No** | Cannot be validated from this repository. Report as **Warning / REQUIRES DATABASE VERIFICATION** — do not report as an error. |
-| Building (`Floors.BuildingId`) | `Floors.BuildingId` | **Yes**, as `/EVO/Schema/FLOCATE.json` | Validate against the supplied `Buildings` worksheet where one is provided; otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
+| Building (`Floors.BuildingId`) | `Floors.BuildingId` | **Yes**, as `/COMMON/EVO/Schema/FLOCATE.json` | Validate against the supplied `Buildings` worksheet where one is provided; otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
 
 > **Note:** `Floors.FloorId`, `Floors.BuildingId`, `Floors.FloorOrder` and the audit columns
 > (`Version`, `Hash`, `Status`, `Deleted`, `CreatedBy`, `CreatedDate`, `ModifiedBy`,
@@ -113,7 +113,7 @@ that a reference is valid or invalid when the referenced data is not available.
 
 Values that **can** be validated in this repository are the internal consistency rules
 above (required values, lengths, data types and uniqueness), plus the `Floor` values
-consumed by `/EVO/Rules/BuildingFloors.md` and `/EVO/Rules/FAREALO.md`.
+consumed by `/COMMON/EVO/Rules/BuildingFloors.md` and `/COMMON/EVO/Rules/FAREALO.md`.
 
 ---
 
@@ -155,7 +155,7 @@ consumed by `/EVO/Rules/BuildingFloors.md` and `/EVO/Rules/FAREALO.md`.
    demonstration data, not client data, and only apply the uniqueness rule across client
    rows.
 2. The worksheet permits 64 characters for `Floor`, but `Floors.Name` in
-   `/EVO/Schema/Floors.json` is `nvarchar` with `MaxLength` 32 bytes (16 characters), and
+   `/COMMON/EVO/Schema/Floors.json` is `nvarchar` with `MaxLength` 32 bytes (16 characters), and
    `BuildingFloors.Name` is `nvarchar` 128 bytes (64 characters). The 64-character
    worksheet limit aligns with `BuildingFloors.Name`, not `Floors.Name`. Report the
    discrepancy rather than silently resolving it.

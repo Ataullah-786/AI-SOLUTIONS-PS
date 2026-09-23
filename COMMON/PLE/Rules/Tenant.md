@@ -2,14 +2,14 @@
 
 **Product:** PLE
 **Target Table:** `Tenant`
-**Schema File:** `/PLE/Schema/Tenant.json`
+**Schema File:** `/COMMON/PLE/Schema/Tenant.json`
 **Source Workbook:** `TENANT_tem.xlsx`
 **Source Worksheet:** `Template`
 
 These rules are taken from the supplied PLE template workbook. They describe how
 intake columns must be populated and validated before data is integrated into the PLE `Tenant` table.
 
-They are **additional to** the structural rules in `/PLE/Schema/Tenant.json`.
+They are **additional to** the structural rules in `/COMMON/PLE/Schema/Tenant.json`.
 Where the workbook and JSON schema disagree on a physical type or length, the JSON
 schema remains the source of truth for storage and the rules below define the business/intake expectation.
 

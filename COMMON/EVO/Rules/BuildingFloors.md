@@ -2,7 +2,7 @@
 
 **Product:** EVO
 **Target Table:** `BuildingFloors`
-**Schema File:** `/EVO/Schema/BuildingFloors.json`
+**Schema File:** `/COMMON/EVO/Schema/BuildingFloors.json`
 **Source Workbook:** MRI Evolution Data Collection Sheet (`4/492 Iss 7`, v5.3.0)
 **Source Worksheet:** `BuildingFloors`
 
@@ -10,7 +10,7 @@ These rules are taken from the MRI Evolution Data Collection Sheet. They describ
 intake (collection sheet) columns must be populated before the file can be integrated into
 the EVO `BuildingFloors` table.
 
-They are **additional to** the structural rules in `/EVO/Schema/BuildingFloors.json`.
+They are **additional to** the structural rules in `/COMMON/EVO/Schema/BuildingFloors.json`.
 Where the two disagree on data type or length, the JSON schema remains the source of
 truth for the physical database, and the rules below define the business/intake expectation.
 
@@ -81,7 +81,7 @@ Report an **Error** where the supplied value exceeds the stated length.
 | Floor | `BuildingFloors.Name` (`nvarchar`) | 128 | 64 |
 | *(Floor Description — from the `Floors` worksheet)* | `BuildingFloors.Description` (`nvarchar`) | 510 | 255 |
 
-`nvarchar` columns in `/EVO/Schema/BuildingFloors.json` record `MaxLength` in **bytes**.
+`nvarchar` columns in `/COMMON/EVO/Schema/BuildingFloors.json` record `MaxLength` in **bytes**.
 The character limit is `MaxLength / 2`.
 
 ### Allowed Values
@@ -92,8 +92,8 @@ corresponding source list is an **Error** when that source worksheet was supplie
 
 | Column | Source List |
 | ------ | ----------- |
-| Site - Building | `Buildings` worksheet, auto-generated `SIte - Building` column → `/EVO/Rules/FLOCATE.md` |
-| Floor | `Floors` worksheet, `Floor` column → `/EVO/Rules/Floors.md` |
+| Site - Building | `Buildings` worksheet, auto-generated `SIte - Building` column → `/COMMON/EVO/Rules/FLOCATE.md` |
+| Floor | `Floors` worksheet, `Floor` column → `/COMMON/EVO/Rules/Floors.md` |
 
 ### Format Rules
 
@@ -121,8 +121,8 @@ corresponding source list is an **Error** when that source worksheet was supplie
 
 ### Conditional Requirements
 
-* This worksheet is only meaningful once both `/EVO/Rules/Floors.md` and
-  `/EVO/Rules/FLOCATE.md` have been loaded. If either is supplied alongside this file,
+* This worksheet is only meaningful once both `/COMMON/EVO/Rules/Floors.md` and
+  `/COMMON/EVO/Rules/FLOCATE.md` have been loaded. If either is supplied alongside this file,
   validate the cross-references against it rather than deferring to the database.
 * Load order: **Floors → FLOCATE (Buildings) → BuildingFloors → FAREALO (Locations)**.
 
@@ -134,8 +134,8 @@ that a reference is valid or invalid when the referenced data is not available.
 
 | Referenced | Used By | Held In This Repo? | How To Validate |
 | ---------- | ------- | ------------------ | --------------- |
-| Buildings (`FLOCATE`) | `Site - Building` | **Yes** — `/EVO/Schema/FLOCATE.json` + `/EVO/Rules/FLOCATE.md` | **Error** if the `Buildings` worksheet was supplied and the value is not found. **Warning / REQUIRES DATABASE VERIFICATION** if it was not supplied. |
-| Floors | `Floor` | **Yes** — `/EVO/Schema/Floors.json` + `/EVO/Rules/Floors.md` | **Error** if the `Floors` worksheet was supplied and the value is not found. **Warning / REQUIRES DATABASE VERIFICATION** if it was not supplied. |
+| Buildings (`FLOCATE`) | `Site - Building` | **Yes** — `/COMMON/EVO/Schema/FLOCATE.json` + `/COMMON/EVO/Rules/FLOCATE.md` | **Error** if the `Buildings` worksheet was supplied and the value is not found. **Warning / REQUIRES DATABASE VERIFICATION** if it was not supplied. |
+| Floors | `Floor` | **Yes** — `/COMMON/EVO/Schema/Floors.json` + `/COMMON/EVO/Rules/Floors.md` | **Error** if the `Floors` worksheet was supplied and the value is not found. **Warning / REQUIRES DATABASE VERIFICATION** if it was not supplied. |
 | Sites | `Site - Building` (prefix) | **No** | Cannot be validated from this repository. Report as **Warning / REQUIRES DATABASE VERIFICATION** — do not report as an error. |
 | Floor Library (`FloorLibraryId` target table) | `Floor` | **No** | Cannot be validated from this repository. Report as **Warning / REQUIRES DATABASE VERIFICATION**. |
 

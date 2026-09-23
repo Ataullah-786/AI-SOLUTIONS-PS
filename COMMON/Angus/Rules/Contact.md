@@ -2,7 +2,7 @@
 
 **Product:** Angus
 **Target Table:** `Contact`
-**Schema File:** `/Angus/Schema/Contact.json`
+**Schema File:** `/COMMON/Angus/Schema/Contact.json`
 **Source Workbook:** MRI Angus Data Collection Sheet
 **Source Worksheet:** `Contact`
 
@@ -10,7 +10,7 @@ These rules are taken from the MRI Angus Data Collection Sheet. They describe ho
 intake (collection sheet) columns must be populated before the file can be integrated
 into the Angus `Contact` table.
 
-They are **additional to** the structural rules in `/Angus/Schema/Contact.json`.
+They are **additional to** the structural rules in `/COMMON/Angus/Schema/Contact.json`.
 Where the two disagree on data type or length, the JSON schema remains the source of
 truth for the physical database, and the rules below define the business/intake expectation.
 
@@ -135,10 +135,10 @@ and `Is COI Subscribed` must contain either `X` / `x` or be blank. Any other val
 ### Cross-Reference Rules
 
 * `Tenant Company Name` must match a Tenant Company Name on the **Tenant** worksheet
-  (`/Angus/Rules/Tenant.md`). A value not present there is an **Error** when the Tenant
+  (`/COMMON/Angus/Rules/Tenant.md`). A value not present there is an **Error** when the Tenant
   file is available for comparison; otherwise report a **Warning**.
 * `Floor Name` and `Suite/Location Name` should correspond to values defined on the
-  **Area** worksheet (`/Angus/Rules/Area.md`) for the same Property Name + Building Name.
+  **Area** worksheet (`/COMMON/Angus/Rules/Area.md`) for the same Property Name + Building Name.
 * `Property Name` and `Building Name` must match existing values in MRI Angus. Without
   database access this cannot be confirmed — report as
   **Warning / REQUIRES DATABASE VERIFICATION**.
@@ -152,8 +152,8 @@ available.
 
 | Referenced | Used By | Held In This Repo? | How To Validate |
 | ---------- | ------- | ------------------ | --------------- |
-| Tenant worksheet | `Tenant Company Name` | **Yes** — `/Angus/Rules/Tenant.md` | Validate against the supplied Tenant file when one is provided (**Error** if the value is not present). Otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
-| Area worksheet | `Floor Name`, `Suite/Location Name` | **Yes** — `/Angus/Rules/Area.md` | Validate against the supplied Area file when one is provided (**Error** if the value is not present). Otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
+| Tenant worksheet | `Tenant Company Name` | **Yes** — `/COMMON/Angus/Rules/Tenant.md` | Validate against the supplied Tenant file when one is provided (**Error** if the value is not present). Otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
+| Area worksheet | `Floor Name`, `Suite/Location Name` | **Yes** — `/COMMON/Angus/Rules/Area.md` | Validate against the supplied Area file when one is provided (**Error** if the value is not present). Otherwise **Warning / REQUIRES DATABASE VERIFICATION**. |
 | Property (MRI Angus) | `Property Name` | **No** | Cannot be validated from this repository. Report as **Warning / REQUIRES DATABASE VERIFICATION** — do not report as an error. |
 | Building (MRI Angus) | `Building Name` | **No** | Cannot be validated from this repository. Report as **Warning / REQUIRES DATABASE VERIFICATION** — do not report as an error. |
 

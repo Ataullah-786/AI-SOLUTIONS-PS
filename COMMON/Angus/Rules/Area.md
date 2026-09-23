@@ -2,7 +2,7 @@
 
 **Product:** Angus
 **Target Table:** `Area`
-**Schema File:** `/Angus/Schema/Area.json`
+**Schema File:** `/COMMON/Angus/Schema/Area.json`
 **Source Workbook:** MRI Angus Data Collection Sheet
 **Source Worksheet:** `Areas`
 
@@ -10,7 +10,7 @@ These rules are taken from the MRI Angus Data Collection Sheet. They describe ho
 intake (collection sheet) columns must be populated before the file can be integrated
 into the Angus `Area` table.
 
-They are **additional to** the structural rules in `/Angus/Schema/Area.json`.
+They are **additional to** the structural rules in `/COMMON/Angus/Schema/Area.json`.
 Where the two disagree on data type or length, the JSON schema remains the source of
 truth for the physical database, and the rules below define the business/intake expectation.
 
@@ -112,8 +112,8 @@ available.
 
 Values that **can** be validated in this repository are the internal consistency rules
 above (required values, lengths, allowed values, flag combinations and uniqueness),
-plus the `Floor Name` / `Suite Name` values consumed by `/Angus/Rules/Tenant.md` and
-`/Angus/Rules/Contact.md`.
+plus the `Floor Name` / `Suite Name` values consumed by `/COMMON/Angus/Rules/Tenant.md` and
+`/COMMON/Angus/Rules/Contact.md`.
 
 ---
 
